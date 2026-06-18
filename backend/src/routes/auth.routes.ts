@@ -1,6 +1,6 @@
 // ARCHIVO: backend/src/routes/auth.routes.ts
 import { Router } from 'express';
-import { login, register, cambiarPassword } from '../controllers/auth.controller';
+import { login, register, cambiarPassword, verificarGoogle } from '../controllers/auth.controller';
 import { verificarToken } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -10,6 +10,9 @@ router.post('/login', login);
 
 // Ruta pública para registrarse
 router.post('/register', register);
+
+// Ruta para verificar Google (requiere token inicial)
+router.post('/verificar-google', verificarToken, verificarGoogle);
 
 // Ruta para cambiar contraseña
 router.post('/cambiar-password', verificarToken, cambiarPassword);

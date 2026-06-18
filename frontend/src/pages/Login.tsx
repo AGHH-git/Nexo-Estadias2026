@@ -94,7 +94,7 @@ export const Login: React.FC = () => {
 
       // Redirigir
       if (requiereCambioPassword) {
-        navigate('/cambiar-password');
+        navigate('/verificar-google');
       } else {
         redirigirPorRol(rol);
       }

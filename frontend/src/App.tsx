@@ -13,6 +13,7 @@ import { JefeDashboard } from './pages/jefe/JefeDashboard';
 import { JefeAsignaciones } from './pages/jefe/JefeAsignaciones';
 import { MaestroDashboard } from './pages/maestro/MaestroDashboard';
 import { CambiarPassword } from './pages/CambiarPassword';
+import { VerificacionGoogle } from './pages/VerificacionGoogle';
 
 export const App: React.FC = () => {
   return (
@@ -21,8 +22,9 @@ export const App: React.FC = () => {
         {/* Ruta Pública: Login */}
         <Route path="/login" element={<Login />} />
 
-        {/* Ruta Forzada: Cambio de Contraseña */}
+        {/* Ruta Forzada: Verificación Google y Cambio de Contraseña */}
         <Route element={<ProtectedRoute isPasswordRoute={true} />}>
+          <Route path="/verificar-google" element={<VerificacionGoogle />} />
           <Route path="/cambiar-password" element={<CambiarPassword />} />
         </Route>
 

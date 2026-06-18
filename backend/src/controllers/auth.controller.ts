@@ -3,8 +3,10 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/database';
+import { OAuth2Client } from 'google-auth-library';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'utcv_super_secret_token_key_2026';
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const login = async (req: Request, res: Response) => {
   const { identificador, password } = req.body;
@@ -184,16 +186,21 @@ export const register = async (req: Request, res: Response) => {
 export const cambiarPassword = async (req: Request, res: Response) => {
   const { currentPassword, newPassword } = req.body;
   const usuarioId = (req as any).usuario.id;
+  const isGoogleVerificado = (req as any).usuario.googleVerificado;
 
   if (!currentPassword || !newPassword) {
     return res.status(400).json({ mensaje: 'Por favor, completa todos los campos.' });
   }
 
   try {
-    const userResult = await pool.query('SELECT password_hash FROM usuarios WHERE id = $1', [usuarioId]);
+    const userResult = await pool.query('SELECT password_hash, requiere_cambio_password FROM usuarios WHERE id = $1', [usuarioId]);
     if (userResult.rows.length === 0) return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
     
     const usuario = userResult.rows[0];
+
+    if (usuario.requiere_cambio_password && !isGoogleVerificado) {
+      return res.status(403).json({ mensaje: 'Debes verificar tu identidad con Google Institucional antes de cambiar tu contraseña.' });
+    }
 
     // Verificar la contraseña actual
     let esPasswordValido = false;
@@ -230,5 +237,56 @@ export const cambiarPassword = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error al cambiar contraseña:', error);
     return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+  }
+};
+
+export const verificarGoogle = async (req: Request, res: Response) => {
+  const { credential } = req.body;
+  const usuario = (req as any).usuario;
+
+  if (!credential) {
+    return res.status(400).json({ mensaje: 'Token de Google no proporcionado.' });
+  }
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    
+    if (!payload || !payload.email) {
+      return res.status(400).json({ mensaje: 'El token de Google no contiene un email válido.' });
+    }
+
+    const email = payload.email.toLowerCase();
+    const matriculaGoogle = email.split('@')[0];
+    const identificadorSistema = usuario.identificador.toLowerCase().split('@')[0];
+
+    if (matriculaGoogle !== identificadorSistema) {
+      return res.status(403).json({ 
+        mensaje: `El correo de Google (${email}) no coincide con tu matrícula registrada en el sistema.` 
+      });
+    }
+
+    // Generar un nuevo JWT indicando que Google ha sido verificado
+    const newToken = jwt.sign(
+      {
+        id: usuario.id,
+        rol: usuario.rol,
+        identificador: usuario.identificador,
+        googleVerificado: true
+      },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    return res.status(200).json({
+      mensaje: 'Verificación de Google exitosa',
+      token: newToken
+    });
+  } catch (error) {
+    console.error('Error al verificar Google:', error);
+    return res.status(401).json({ mensaje: 'Token de Google inválido o configuración de cliente faltante.' });
   }
 };

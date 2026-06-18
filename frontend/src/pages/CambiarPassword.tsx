@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { ShieldAlert, ShieldCheck } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, ArrowLeft } from 'lucide-react';
 
 export const CambiarPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +14,14 @@ export const CambiarPassword: React.FC = () => {
 
   const nombre = localStorage.getItem('utcv_nombre') || 'Usuario';
   const rol = localStorage.getItem('utcv_rol') || '';
+
+  const handleVolver = () => {
+    localStorage.removeItem('utcv_token');
+    localStorage.removeItem('utcv_rol');
+    localStorage.removeItem('utcv_nombre');
+    localStorage.removeItem('utcv_requiere_cambio');
+    navigate('/login');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,6 +150,15 @@ export const CambiarPassword: React.FC = () => {
               ) : (
                 'Actualizar Contraseña'
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleVolver}
+              className="w-full flex items-center justify-center px-4 py-2 text-gray-500 hover:text-gray-700 font-semibold text-sm transition-colors mt-2"
+            >
+              <ArrowLeft size={16} className="mr-2" />
+              Cancelar y volver al inicio
             </button>
           </form>
         )}
