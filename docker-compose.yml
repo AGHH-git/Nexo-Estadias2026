@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: nexus_db
+    restart: always
+    environment:
+      POSTGRES_USER: user_nexus
+      POSTGRES_PASSWORD: password_nexus
+      POSTGRES_DB: Estadias2026
+    ports:
+      - "5435:5432"  # La DB usará el 5435 para salir al Mac
+
+  backend:
+    build: ./backend
+    container_name: nexus_backend
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://user_nexus:password_nexus@db:5432/Estadias2026
+
+  frontend:
+    build: ./frontend
+    container_name: nexus_frontend
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "4200:4200"
+    # ESTA ES LA LÍNEA QUE VAMOS A AGREGAR:
+    command: npx ng serve --host 0.0.0.0

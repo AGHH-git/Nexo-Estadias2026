@@ -1,0 +1,189 @@
+====================================================================
+           NEXUS ESTADÍAS 2026 — REPORTE DE ESTRUCTURA DE BD
+====================================================================
+Generado el: 9/6/2026, 10:44:07 a.m.
+
+--- 1. TIPOS ENUM PERSONALIZADOS ---
+Enum: "estatus_tramite" [Borrador, En Revisión Digital, Rechazado Digital, Aprobado para Firmas, Completado]
+Enum: "roles_usuario" [ALUMNO, MAESTRO, JEFE_CARRERA, VINCULACION]
+
+--- 2. DETALLE DE TABLAS ---
+==================================================
+TABLA: "alumnos"
+==================================================
+Columnas:
+  - matricula                 : character varying(20)     | NOT NULL
+  - usuario_id                : integer                   | NOT NULL
+  - nombre_completo           : character varying(150)    | NOT NULL
+  - carrera                   : character varying(100)    | NOT NULL
+  - campus                    : character varying(50)     | NULL DEFAULT 'Cuitláhuac'::character varying
+  - sistema                   : character varying(50)     | NULL DEFAULT 'Escolarizado'::character varying
+  - nss                       : character varying(20)     | NULL
+  - telefono                  : character varying(15)     | NULL
+
+Restricciones y Claves:
+  * PK [matricula] (Nombre: alumnos_pkey)
+  * FK [usuario_id] -> usuarios(id) (Nombre: alumnos_usuario_id_fkey)
+  * UNIQUE [usuario_id] (Nombre: alumnos_usuario_id_unique)
+  * CHECK (Nombre: 2200_58669_1_not_null)
+  * CHECK (Nombre: 2200_58669_2_not_null)
+  * CHECK (Nombre: 2200_58669_3_not_null)
+  * CHECK (Nombre: 2200_58669_4_not_null)
+
+==================================================
+TABLA: "empresas"
+==================================================
+Columnas:
+  - id                        : integer                   | NOT NULL DEFAULT nextval('empresas_id_seq'::regclass)
+  - razon_social              : character varying(150)    | NOT NULL
+  - nombre_comercial          : character varying(150)    | NULL
+  - rfc                       : character varying(15)     | NULL
+  - fecha_constitucion        : date                      | NOT NULL
+  - giro                      : character varying(50)     | NOT NULL
+  - tamano                    : character varying(20)     | NOT NULL
+  - tipo_empresa              : character varying(20)     | NOT NULL
+  - estado                    : character varying(50)     | NOT NULL
+  - municipio                 : character varying(50)     | NOT NULL
+  - cp                        : character varying(10)     | NOT NULL
+  - domicilio                 : text                      | NOT NULL
+  - telefono                  : character varying(15)     | NULL
+
+Restricciones y Claves:
+  * PK [id] (Nombre: empresas_pkey)
+  * UNIQUE [rfc] (Nombre: empresas_rfc_key)
+  * CHECK (Nombre: 2200_58694_1_not_null)
+  * CHECK (Nombre: 2200_58694_2_not_null)
+  * CHECK (Nombre: 2200_58694_5_not_null)
+  * CHECK (Nombre: 2200_58694_6_not_null)
+  * CHECK (Nombre: 2200_58694_7_not_null)
+  * CHECK (Nombre: 2200_58694_8_not_null)
+  * CHECK (Nombre: 2200_58694_9_not_null)
+  * CHECK (Nombre: 2200_58694_10_not_null)
+  * CHECK (Nombre: 2200_58694_11_not_null)
+  * CHECK (Nombre: 2200_58694_12_not_null)
+
+==================================================
+TABLA: "historial_observaciones"
+==================================================
+Columnas:
+  - id                        : integer                   | NOT NULL DEFAULT nextval('historial_observaciones_id_seq'::regclass)
+  - tramite_id                : integer                   | NULL
+  - maestro_id                : integer                   | NULL
+  - comentarios               : text                      | NOT NULL
+  - fecha                     : timestamp without time zone | NULL DEFAULT CURRENT_TIMESTAMP
+
+Restricciones y Claves:
+  * PK [id] (Nombre: historial_observaciones_pkey)
+  * FK [tramite_id] -> tramites_estadia(id) (Nombre: historial_observaciones_tramite_id_fkey)
+  * FK [maestro_id] -> maestros(id) (Nombre: historial_observaciones_maestro_id_fkey)
+  * CHECK (Nombre: 2200_58737_1_not_null)
+  * CHECK (Nombre: 2200_58737_4_not_null)
+
+==================================================
+TABLA: "logs_auditoria"
+==================================================
+Columnas:
+  - id                        : integer                   | NOT NULL DEFAULT nextval('logs_auditoria_id_seq'::regclass)
+  - usuario_id                : integer                   | NULL
+  - accion                    : character varying(100)    | NOT NULL
+  - detalles                  : text                      | NULL
+  - fecha                     : timestamp without time zone | NULL DEFAULT CURRENT_TIMESTAMP
+
+Restricciones y Claves:
+  * PK [id] (Nombre: logs_auditoria_pkey)
+  * FK [usuario_id] -> usuarios(id) (Nombre: logs_auditoria_usuario_id_fkey)
+  * CHECK (Nombre: 2200_58757_1_not_null)
+  * CHECK (Nombre: 2200_58757_3_not_null)
+
+==================================================
+TABLA: "maestros"
+==================================================
+Columnas:
+  - id                        : integer                   | NOT NULL DEFAULT nextval('maestros_id_seq'::regclass)
+  - usuario_id                : integer                   | NOT NULL
+  - nombre_completo           : character varying(150)    | NOT NULL
+  - area_adscripcion          : character varying(100)    | NOT NULL
+  - cargo                     : character varying(50)     | NOT NULL
+  - telefono                  : character varying(15)     | NULL
+  - extension                 : character varying(10)     | NULL
+
+Restricciones y Claves:
+  * PK [id] (Nombre: maestros_pkey)
+  * FK [usuario_id] -> usuarios(id) (Nombre: maestros_usuario_id_fkey)
+  * UNIQUE [usuario_id] (Nombre: maestros_usuario_id_unique)
+  * CHECK (Nombre: 2200_58682_1_not_null)
+  * CHECK (Nombre: 2200_58682_2_not_null)
+  * CHECK (Nombre: 2200_58682_3_not_null)
+  * CHECK (Nombre: 2200_58682_4_not_null)
+  * CHECK (Nombre: 2200_58682_5_not_null)
+
+==================================================
+TABLA: "periodos"
+==================================================
+Columnas:
+  - id                        : integer                   | NOT NULL DEFAULT nextval('periodos_id_seq'::regclass)
+  - nombre                    : character varying(50)     | NOT NULL
+  - anio                      : integer                   | NOT NULL
+  - activo                    : boolean                   | NULL DEFAULT false
+
+Restricciones y Claves:
+  * PK [id] (Nombre: periodos_pkey)
+  * CHECK (Nombre: 2200_58662_1_not_null)
+  * CHECK (Nombre: 2200_58662_2_not_null)
+  * CHECK (Nombre: 2200_58662_3_not_null)
+
+==================================================
+TABLA: "tramites_estadia"
+==================================================
+Columnas:
+  - id                        : integer                   | NOT NULL DEFAULT nextval('tramites_estadia_id_seq'::regclass)
+  - matricula                 : character varying(20)     | NULL
+  - empresa_id                : integer                   | NULL
+  - maestro_id                : integer                   | NULL
+  - periodo_id                : integer                   | NULL
+  - asesor_ind_nombre         : character varying(150)    | NULL
+  - asesor_ind_cargo          : character varying(100)    | NULL
+  - asesor_ind_telefono       : character varying(15)     | NULL
+  - asesor_ind_email          : character varying(100)    | NULL
+  - nivel_academico           : character varying(10)     | NULL
+  - titulo_proyecto           : character varying(200)    | NULL
+  - problematica              : text                      | NULL
+  - alcance                   : character varying(50)     | NULL
+  - producto_generar          : text                      | NULL
+  - horario_alumno            : text                      | NULL
+  - fecha_inicio              : date                      | NULL
+  - fecha_termino             : date                      | NULL
+  - estatus                   : USER-DEFINED              | NULL DEFAULT 'Borrador'::estatus_tramite
+  - ruta_nss                  : character varying(255)    | NULL
+  - ruta_evidencia            : character varying(255)    | NULL
+  - fecha_registro            : timestamp without time zone | NULL DEFAULT CURRENT_TIMESTAMP
+  - fecha_actualizacion       : timestamp without time zone | NULL DEFAULT CURRENT_TIMESTAMP
+  - modalidad_estadia         : character varying(50)     | NULL DEFAULT 'Local'::character varying
+  - ruta_ine_tutor            : character varying(255)    | NULL
+
+Restricciones y Claves:
+  * PK [id] (Nombre: tramites_estadia_pkey)
+  * FK [matricula] -> alumnos(matricula) (Nombre: tramites_estadia_matricula_fkey)
+  * FK [empresa_id] -> empresas(id) (Nombre: tramites_estadia_empresa_id_fkey)
+  * FK [maestro_id] -> maestros(id) (Nombre: tramites_estadia_maestro_id_fkey)
+  * FK [periodo_id] -> periodos(id) (Nombre: tramites_estadia_periodo_id_fkey)
+  * CHECK (Nombre: chk_datos_completos)
+  * CHECK (Nombre: 2200_58705_1_not_null)
+
+==================================================
+TABLA: "usuarios"
+==================================================
+Columnas:
+  - id                        : integer                   | NOT NULL DEFAULT nextval('usuarios_id_seq'::regclass)
+  - identificador             : character varying(50)     | NOT NULL
+  - password_hash             : character varying(255)    | NOT NULL
+  - rol                       : USER-DEFINED              | NOT NULL
+  - creado_en                 : timestamp without time zone | NULL DEFAULT CURRENT_TIMESTAMP
+
+Restricciones y Claves:
+  * PK [id] (Nombre: usuarios_pkey)
+  * UNIQUE [identificador] (Nombre: usuarios_identificador_key)
+  * CHECK (Nombre: 2200_58652_1_not_null)
+  * CHECK (Nombre: 2200_58652_2_not_null)
+  * CHECK (Nombre: 2200_58652_3_not_null)
+  * CHECK (Nombre: 2200_58652_4_not_null)
