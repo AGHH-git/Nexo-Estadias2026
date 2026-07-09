@@ -83,9 +83,18 @@ export const VerificacionGoogle: React.FC = () => {
                 shape="rectangular"
                 width="100%"
                 text="continue_with"
-                prompt="select_account"
               />
               
+              {import.meta.env.VITE_DISABLE_GOOGLE_AUTH === 'true' && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/cambiar-password')}
+                  className="w-full flex items-center justify-center px-4 py-2 bg-yellow-100 text-yellow-800 hover:bg-yellow-200 font-bold text-sm transition-colors mt-2 rounded-utcv"
+                >
+                  Saltar Verificación (Modo Prueba)
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={handleVolver}

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GESDOC – COPIA CONTROLADA - Registro y aceptación del proyecto de estadía</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.15;
+            color: #000;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td,
+        th {
+            border: 1px solid #000;
+            padding: 2px;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        .bg-blue {
+            background-color: #1a4d8c;
+            color: #fff;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .bg-gray {
+            background-color: #c0c0c0;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .bg-lightgray {
+            background-color: #e6e6e6;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="tel"],
+        input[type="email"] {
+            width: 100%;
+            border: none;
+            border-bottom: 1px dotted #999;
+            background: transparent;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            padding: 2px;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="tel"]:focus,
+        input[type="email"]:focus {
+            background-color: #ffffcc;
+            border-bottom: 1px solid #000;
+        }
+
+        textarea {
+            width: 100%;
+            border: none;
+            border-bottom: 1px dotted #999;
+            background: transparent;
+            resize: none;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            padding: 4px;
+        }
+
+        textarea:focus {
+            background-color: #ffffcc;
+            border-bottom: 1px solid #000;
+        }
+
+        .flex-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-inline {
+            flex-grow: 1;
+            border-bottom: 1px solid #000 !important;
+            margin-left: 5px;
+        }
+
+        .page-break {
+            page-break-after: always;
+            margin: 20px 0;
+            border-top: 1px dashed #ccc;
+        }
+
+        @media print {
+            @page { 
+                size: A4;
+                margin: 0.5cm; 
+            }
+            .no-print {
+                display: none;
+            }
+
+            body {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            input[type="text"],
+            input[type="date"],
+            input[type="tel"],
+            input[type="email"] {
+                background: transparent !important;
+            }
+            textarea {
+                background: transparent !important;
+                overflow: visible !important;
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+            }
+
+            .page-break {
+                border-top: none;
+            }
+        }
+
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .checkbox-label input {
+            margin-right: 3px;
+        }
+
+        /* Specific borders */
+        .no-bottom-border {
+            border-bottom: none !important;
+        }
+
+        .no-top-border {
+            border-top: none !important;
+        }
+
+        .inner-table td {
+            border: none;
+            padding: 2px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header info -->
+    <div style="font-size: 10px; margin-bottom: 2px;">GESDOC – COPIA CONTROLADA <span style="float:right">1/2</span>
+    </div>
+
+    <!-- Top Header Table -->
+    <table style="border: 1px solid #000; margin-bottom: 10px;">
+        <tr>
+            <td rowspan="2" style="width: 25%; text-align: center; vertical-align: middle;">
+                <img src="logo%20utcv.png" alt="UTCV" style="max-height: 90px; max-width: 95%;"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none; font-weight: bold; color: #00a14b; font-size: 14px; text-align: center;">UTCV
+                </div>
+            </td>
+            <td class="bg-blue text-center" style="width: 50%; vertical-align: middle;">
+                Universidad Tecnológica del Centro de Veracruz
+            </td>
+            <td class="bg-lightgray text-center font-bold" style="width: 12.5%; vertical-align: middle;">
+                CÓDIGO – REV.
+            </td>
+            <td class="text-center font-bold" style="width: 12.5%; vertical-align: middle;">
+                FODVI08 - I<br>
+            </td>
+        </tr>
+        <tr>
+            <td class="text-center font-bold" style="vertical-align: middle; padding: 10px;">
+                Registro y aceptación del proyecto de estadía<br>
+                Dirección de Vinculación.<br>
+                Departamento de Prácticas y Estadías.
+            </td>
+            <td class="bg-lightgray" style="font-size: 9px;">
+                Responsable de la<br>
+                eficacia (cód. –<br>
+                firma):<br>
+                Última actualización:
+            </td>
+            <td class="bg-lightgray text-center font-bold" style="vertical-align: middle;">
+                DVI01<br>[24/01/2025]
+            </td>
+        </tr>
+    </table>
+
+    <!-- Main Form Grid (Sections 1 to 8) -->
+    <table style="table-layout: fixed;">
+        <colgroup>
+            <col style="width: 20%;">
+            <col style="width: 30%;">
+            <col style="width: 20%;">
+            <col style="width: 30%;">
+        </colgroup>
+
+        <!-- Section 1 -->
+        <tr>
+            <td colspan="4" class="bg-gray">1 Datos Generales de la Empresa</td>
+        </tr>
+        <tr>
+            <td>Nombre de la empresa</td>
+            <td colspan="2"><input type="text" class="field-input" data-field="empresa_nombre"></td>
+            <td>
+                <div class="flex-row">Fecha: <input type="text" class="field-input input-inline" data-field="fecha">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>Razón Social de la Empresa</td>
+            <td colspan="3"><input type="text" class="field-input" data-field="razon_social"></td>
+        </tr>
+        <tr>
+            <td>Domicilio</td>
+            <td colspan="3"><input type="text" class="field-input" data-field="domicilio"></td>
+        </tr>
+        <tr>
+            <td>Teléfonos</td>
+            <td><input type="text" class="field-input" data-field="telefonos"></td>
+            <td colspan="2">
+                <div class="flex-row">C.P: <input type="text" class="field-input input-inline" data-field="cp"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>Municipio</td>
+            <td><input type="text" class="field-input" data-field="municipio"></td>
+            <td colspan="2">
+                <div class="flex-row">Estado <input type="text" class="field-input input-inline" data-field="estado">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="font-bold" style="padding: 4px; vertical-align: middle;">
+                Giro de la Empresa/Institución
+            </td>
+            <td colspan="3" style="padding: 4px; vertical-align: middle;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px;">
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Comercial <input
+                            type="checkbox" data-check="giro_comercial"></label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Industrial
+                        <input type="checkbox" data-check="giro_industrial"></label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Servicios <input
+                            type="checkbox" data-check="giro_servicios"></label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Educativo <input
+                            type="checkbox" data-check="giro_educativo"></label>
+                    <div style="display: flex; align-items: center; gap: 4px; flex-grow: 1;">
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Otro <input
+                                type="checkbox" data-check="giro_otro"></label>
+                        <span style="white-space: nowrap;">(especifique):</span>
+                        <input type="text" class="field-input" data-field="giro_otro_texto"
+                            style="flex-grow: 1; min-width: 100px;">
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="padding: 0;">
+                <div style="display: flex; width: 100%; align-items: stretch; min-height: 35px;">
+                    <div class="font-bold bg-lightgray"
+                        style="flex: 0 0 18%; padding: 4px; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px;">
+                        Tamaño de Empresa<br>(No. Personas)
+                    </div>
+                    <div
+                        style="flex: 0 0 47%; padding: 4px; border-right: 1px solid black; display: flex; align-items: center; justify-content: space-around;">
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Micro (1-10)
+                            <input type="radio" name="tamano_empresa" value="micro"></label>
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Pequeña
+                            (11-50) <input type="radio" name="tamano_empresa" value="pequena"></label>
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Mediana
+                            (51-150) <input type="radio" name="tamano_empresa" value="mediana"></label>
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Grande (Más
+                            de 151) <input type="radio" name="tamano_empresa" value="grande"></label>
+                    </div>
+                    <div class="font-bold bg-lightgray"
+                        style="flex: 0 0 15%; padding: 4px; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; position: relative;">
+                        <div style="position: absolute; right: 2px; top: 2px; font-size: 7px; font-weight: normal;">
+                            (Marcar X)</div>
+                        Tipo de Empresa
+                    </div>
+                    <div
+                        style="flex: 0 0 20%; padding: 4px; display: flex; align-items: center; justify-content: space-around;">
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Pública
+                            <input type="radio" name="tipo_empresa" value="publica"></label>
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Privada
+                            <input type="radio" name="tipo_empresa" value="privada"></label>
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Section 2 -->
+        <tr>
+            <td colspan="4" class="bg-gray">2 Descripción del Proyecto de Estadía Solicitado</td>
+        </tr>
+        <tr>
+            <td rowspan="2">
+                <div class="text-center font-bold">Nivel</div>
+                <div style="font-size: 8px; text-align: center;">(Marcar con una X)</div>
+                <div style="display: flex; justify-content: space-between; padding: 0 10px; margin-top: 5px;">
+                    <span class="font-bold">TSU</span> <input type="checkbox" data-level="tsu">
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 0 10px; margin-top: 5px;">
+                    <span class="font-bold">ING</span> <input type="checkbox" data-level="ing">
+                </div>
+            </td>
+            <td class="text-center font-bold" style="vertical-align: middle;">Nombre del programa educativo:</td>
+            <td style="vertical-align: middle;"><input type="text" class="field-input" data-field="programa_educativo">
+            </td>
+            <td rowspan="2">
+                <div class="text-center font-bold">Alias</div>
+                <input type="text" class="field-input text-center" data-field="alias"
+                    style="margin-top: 10px; border-bottom: 1px solid #000; width: 80%; margin-left: 10%;">
+            </td>
+        </tr>
+        <tr>
+            <td class="text-center font-bold" style="vertical-align: middle;">Área (si aplica):</td>
+            <td style="vertical-align: middle;"><input type="text" class="field-input" data-field="area"></td>
+        </tr>
+        <tr>
+            <td colspan="4" class="bg-gray" style="font-size: 11px; font-weight: normal; font-style: italic; padding: 8px 8px 8px 15px;">
+                <span class="font-bold" style="font-style: normal;">Descripción de la Problemática</span> (describa
+                brevemente la problemática a resolver, su alcance y el área a impactar en la empresa)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="padding: 0;">
+                <textarea class="field-input" data-field="problematica" rows="7" style="padding: 5px; border: none !important; outline: none !important;"></textarea>
+            </td>
+        </tr>
+
+        <!-- Section 3 -->
+        <tr>
+            <td colspan="4" class="bg-gray">3 Alcance del Proyecto de estadía (si aplica) <span
+                    style="font-size: 8px; font-weight: normal; float: right;">(Marcar con una X)</span></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="vertical-align: middle; padding: 4px;">
+                <div style="display: flex; justify-content: space-between; padding-right: 10%;">
+                    Transferencia Tecnológica <input type="checkbox" data-alcance="tecnologica"
+                        style="width: 15px; height: 15px;">
+                </div>
+            </td>
+            <td colspan="2" class="font-bold bg-lightgray" style="text-align: center; vertical-align: middle;">
+                Descripción del producto a generar:</td>
+        </tr>
+        <tr>
+            <td colspan="2" style="vertical-align: middle; padding: 4px;">
+                <div style="display: flex; justify-content: space-between; padding-right: 10%;">
+                    Innovación de Métodos y/o procesos <input type="checkbox" data-alcance="metodos"
+                        style="width: 15px; height: 15px;">
+                </div>
+            </td>
+            <td colspan="2" rowspan="2" style="padding: 0;">
+                <textarea class="field-input" data-field="producto_generar" rows="3"
+                    style="height: 100%; padding: 5px;"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" rowspan="3" style="vertical-align: top; padding: 10px 4px;">
+                <div style="display: flex; align-items: center; gap: 10px; padding-right: 10%;">
+                    <span>Otro (especifique):</span>
+                    <input type="text" class="field-input" data-field="alcance_otro"
+                        style="flex-grow: 1; border-bottom: 1px solid #000; height: 20px;">
+                    <input type="checkbox" data-alcance="otro" style="width: 15px; height: 15px;">
+                </div>
+            </td>
+            <!-- The right cell of this row is covered by the textarea's rowspan=2 from the row above -->
+        </tr>
+        <tr>
+            <!-- The left cell of this row is covered by Otro's rowspan=3 from the row above -->
+            <td colspan="2" class="font-bold bg-lightgray" style="text-align: center; vertical-align: middle;">Línea de
+                investigación a la que corresponde:</td>
+        </tr>
+        <tr>
+            <!-- The left cell of this row is covered by Otro's rowspan=3 from two rows above -->
+            <td colspan="2" style="vertical-align: middle; height: 35px;">
+                <input type="text" class="field-input" data-field="linea_investigacion" style="height: 100%;">
+            </td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <div style="font-size: 10px; margin-bottom: 2px;">GESDOC – COPIA CONTROLADA <span style="float:right">2/2</span>
+    </div>
+
+    <!-- Main Table Part 2 -->
+    <table style="table-layout: fixed;">
+        <colgroup>
+            <col style="width: 20%;">
+            <col style="width: 30%;">
+            <col style="width: 20%;">
+            <col style="width: 30%;">
+        </colgroup>
+
+        <!-- Section 4 -->
+        <tr>
+            <td colspan="4" class="bg-gray">4 Datos del asesor industrial que atenderá al alumno durante toda la estadía
+            </td>
+        </tr>
+        <tr>
+            <td>Nombre:</td>
+            <td><input type="text" class="field-input" data-field="asesor_nombre"></td>
+            <td>Cargo:</td>
+            <td><input type="text" class="field-input" data-field="asesor_cargo"></td>
+        </tr>
+        <tr>
+            <td>Teléfono y/o Extensiones</td>
+            <td><input type="text" class="field-input" data-field="asesor_telefono"></td>
+            <td>e-mail</td>
+            <td><input type="text" class="field-input" data-field="asesor_email"></td>
+        </tr>
+
+        <!-- Section 5 -->
+        <tr>
+            <td colspan="4" class="bg-gray">5 Compromisos del Alumno</td>
+        </tr>
+        <tr>
+            <td colspan="2"><label class="checkbox-label"><input type="checkbox" data-compromiso="local"
+                        style="width: 15px; height: 15px;"> Local</label></td>
+            <td colspan="2"><label class="checkbox-label"><input type="checkbox" data-compromiso="foranea"
+                        style="width: 15px; height: 15px;"> Foránea</label></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="font-size: 10px; padding: 8px;">
+                <span class="font-bold">El alumno es responsable de presentarse a recibir asesorías de seguimiento en
+                    las instalaciones de la universidad.</span>
+            </td>
+            <td colspan="2" style="font-size: 10px; padding: 8px;">
+                <span class="font-bold">La universidad no obliga al estudiante a que realice sus estadías fuera de un
+                    radio de 40 kilómetros de distancia alrededor de la Universidad, es responsabilidad de los tutores
+                    autorizar y asumir los gastos y riesgos que se generen derivados de una estancia foránea.</span><br>
+                [Anexar copia del INE del padre o tutor]<br><br>
+                <div class="flex-row" style="justify-content: flex-end;">
+                    <span style="font-style: italic;">Nombre y firma del tutor</span>
+                    <input type="text" class="field-input input-inline" data-field="tutor_firma" style="width: 60%;">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="2" class="font-bold" style="vertical-align: middle;">Nombre del<br>Alumno:</td>
+            <td rowspan="2" style="vertical-align: middle;"><input type="text" class="field-input"
+                    data-field="alumno_nombre" style="height: 100%;"></td>
+            <td class="text-center font-bold bg-lightgray" style="vertical-align: middle;">Sexo</td>
+            <td class="text-center font-bold bg-lightgray" style="vertical-align: middle;">Matrícula</td>
+        </tr>
+        <tr>
+            <td style="vertical-align: middle; padding: 4px;">
+                <div style="display: flex; justify-content: space-around; align-items: center;">
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">M <input
+                            type="radio" name="sexo" value="masculino"></label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">F <input
+                            type="radio" name="sexo" value="femenino"></label>
+                </div>
+            </td>
+            <td style="vertical-align: middle; height: 30px;">
+                <input type="text" class="field-input text-center" data-field="matricula" style="height: 100%;">
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="2" class="font-bold" style="vertical-align: middle;">e-mail:</td>
+            <td rowspan="2" style="vertical-align: middle;"><input type="text" class="field-input"
+                    data-field="alumno_email"></td>
+            <td colspan="2" class="font-bold bg-lightgray"
+                style="font-size: 10px; vertical-align: middle; line-height: 1.2; text-align: center;">
+                NSS (No. Seguridad Social, anexar copia de activación):
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="vertical-align: middle; height: 30px;">
+                <input type="text" class="field-input" data-field="nss" style="height: 100%;">
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="2" class="font-bold" style="vertical-align: middle;">Número<br>Celular</td>
+            <td rowspan="2" style="vertical-align: middle;"><input type="text" class="field-input" data-field="celular"
+                    style="height: 100%;"></td>
+            <td class="text-center font-bold bg-lightgray">Campus</td>
+            <td class="text-center font-bold bg-lightgray">Sistema</td>
+        </tr>
+        <tr>
+            <td class="text-center">
+                Cuitláhuac &nbsp;&nbsp; Maltrata<br>
+                <input type="radio" name="campus" value="cuitlahuac">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="radio" name="campus"
+                    value="maltrata">
+            </td>
+            <td class="text-center">
+                Escolarizado &nbsp;&nbsp; Despresurizado<br>
+                <input type="radio" name="sistema" value="escolarizado">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="radio" name="sistema"
+                    value="despresurizado">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="font-size: 10px; vertical-align: middle;">
+                <span class="font-bold">Horario de trabajo del Alumno que cubre la estadía.</span> (Debe ser al menos 5
+                días a la semana con turnos de 8 hrs., indicar, si aplica, rol de turnos)
+            </td>
+            <td class="bg-lightgray font-bold" style="font-size: 9px; vertical-align: middle; text-align: center;">
+                Fecha de Inicio de Estadía
+            </td>
+            <td class="bg-lightgray font-bold" style="font-size: 9px; vertical-align: middle; text-align: center;">
+                Fecha de Término de Estadía
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="vertical-align: middle;">
+                <textarea class="field-input" data-field="horario_trabajo" rows="2"></textarea>
+            </td>
+            <td style="vertical-align: middle;">
+                <input type="text" class="field-input text-center" data-field="fecha_inicio">
+            </td>
+            <td style="vertical-align: middle;">
+                <input type="text" class="field-input text-center" data-field="fecha_termino">
+            </td>
+        </tr>
+
+        <!-- Section 6 -->
+        <tr>
+            <td colspan="4" class="bg-gray">6 Datos del Asesor Académico</td>
+        </tr>
+        <tr>
+            <td rowspan="2" class="font-bold" style="vertical-align: middle;">Asesor<br>Académico</td>
+            <td rowspan="2" style="vertical-align: middle;"><input type="text" class="field-input"
+                    data-field="academico_nombre" style="height: 100%;"></td>
+            <td class="font-bold bg-lightgray" style="vertical-align: middle; text-align: center;">
+                Área de adscripción:
+            </td>
+            <td class="text-center font-bold bg-lightgray" style="vertical-align: middle;">
+                CARGO
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: middle;">
+                <input type="text" class="field-input" data-field="academico_area" style="height: 100%;">
+            </td>
+            <td style="vertical-align: middle; padding: 4px;">
+                <div style="display: flex; justify-content: space-around; align-items: center;">
+                    <label class="checkbox-label"
+                        style="display: flex; flex-direction: column; align-items: center; gap: 4px;">PA <input
+                            type="checkbox" data-cargo="pa"></label>
+                    <label class="checkbox-label"
+                        style="display: flex; flex-direction: column; align-items: center; gap: 4px;">PTC <input
+                            type="checkbox" data-cargo="ptc"></label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="padding: 0;">
+                <div style="display: flex; width: 100%; align-items: stretch; min-height: 35px;">
+                    <div class="font-bold bg-lightgray"
+                        style="flex: 0 0 15%; padding: 4px; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; text-align: center;">
+                        Teléfono
+                    </div>
+                    <div class="italic text-center"
+                        style="flex: 0 0 20%; padding: 4px; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                        01(278)732 20 50
+                    </div>
+                    <div class="font-bold bg-lightgray"
+                        style="flex: 0 0 10%; padding: 4px; border-right: 1px solid black; display: flex; align-items: center; justify-content: center;">
+                        Ext.
+                    </div>
+                    <div style="flex: 0 0 15%; padding: 4px; border-right: 1px solid black;">
+                        <input type="text" class="field-input text-center" data-field="academico_extension"
+                            style="height: 100%;">
+                    </div>
+                    <div class="font-bold bg-lightgray"
+                        style="flex: 0 0 15%; padding: 4px; border-right: 1px solid black; display: flex; align-items: center; justify-content: center;">
+                        e-mail:
+                    </div>
+                    <div style="flex: 0 0 25%; padding: 4px;">
+                        <input type="text" class="field-input" data-field="academico_email" style="height: 100%;">
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="3" style="text-align: center; vertical-align: middle;">Fechas de<br>evaluación</td>
+            <td class="text-center font-bold bg-lightgray">Evaluación parcial</td>
+            <td colspan="2" class="text-center font-bold bg-lightgray">Evaluación Final</td>
+        </tr>
+        <tr>
+            <td><input type="text" class="field-input text-center" data-field="eval_parcial"></td>
+            <td colspan="2"><input type="text" class="field-input text-center" data-field="eval_final"></td>
+        </tr>
+        <tr>
+            <td colspan="3" class="text-center" style="font-size: 9px;">(Agendar día y horario de evaluación dentro del
+                periodo de aplicación de exámenes, previo convenio con asesor industrial)</td>
+        </tr>
+        <tr>
+            <td class="font-bold bg-lightgray" style="vertical-align: middle; text-align: center;">
+                Forma de<br>seguimiento con<br>alumno<br><span style="font-size: 8px; font-weight: normal;">(Marcar con
+                    una X)</span>
+            </td>
+            <td style="vertical-align: middle; padding: 4px;">
+                <div style="display: flex; justify-content: space-around; align-items: center;">
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Presencial
+                        <input type="radio" name="seguimiento_alumno" value="presencial"></label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">A distancia
+                        <input type="radio" name="seguimiento_alumno" value="distancia"></label>
+                </div>
+            </td>
+            <td class="text-center font-bold bg-lightgray"
+                style="font-size: 10px; line-height: 1.2; vertical-align: middle;">
+                Especificar días,<br>horarios de<br>comunicación
+            </td>
+            <td style="vertical-align: middle;">
+                <input type="text" class="field-input" data-field="seguimiento_dias" style="height: 100%;">
+            </td>
+        </tr>
+        <tr>
+            <td class="font-bold bg-lightgray" style="vertical-align: middle; text-align: center;">
+                Forma de<br>comunicación con<br>asesor industrial<br><span
+                    style="font-size: 8px; font-weight: normal;">(Marcar con una X)</span>
+            </td>
+            <td style="vertical-align: middle; padding: 4px;">
+                <div style="display: flex; justify-content: space-around; align-items: center;">
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">Presencial
+                        <input type="radio" name="contacto_asesor" value="presencial"></label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 4px;">A distancia
+                        <input type="radio" name="contacto_asesor" value="distancia"></label>
+                </div>
+            </td>
+            <td class="text-center font-bold bg-lightgray"
+                style="font-size: 10px; line-height: 1.2; vertical-align: middle;">
+                Especificar días,<br>horarios de<br>comunicación
+            </td>
+            <td style="vertical-align: middle;">
+                <input type="text" class="field-input" data-field="contacto_dias" style="height: 100%;">
+            </td>
+        </tr>
+
+        <!-- Section 7 -->
+        <tr>
+            <td colspan="4" class="bg-gray">7 Firma de las partes involucradas <span
+                    style="font-weight: normal; font-style: italic;">(nombre y firma en cada uno).</span></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding: 0; vertical-align: bottom;">
+                <div style="height: 60px;"></div>
+                <div
+                    style="width: 70%; margin: 0 auto; border-top: 1px solid #000; text-align: center; font-weight: bold; font-size: 10px; padding: 4px;">
+                    Alumno</div>
+            </td>
+            <td colspan="2" style="padding: 0; vertical-align: bottom;">
+                <div style="height: 60px;"></div>
+                <div
+                    style="width: 70%; margin: 0 auto; border-top: 1px solid #000; text-align: center; font-weight: bold; font-size: 10px; padding: 4px;">
+                    Asesor Industrial</div>
+            </td>
+        </tr>
+
+        <!-- Section 8 -->
+        <tr>
+            <td colspan="4" class="bg-gray">8 Observaciones</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="padding: 0;">
+                <textarea class="field-input" data-field="observaciones" rows="3" style="padding: 5px;"></textarea>
+            </td>
+        </tr>
+    </table>
+
+    <div style="font-size: 10px; margin-top: 10px; font-weight: bold; font-style: italic;">
+        Distribución del Documento: Original para Vinculación, copia para el asesor industrial, copia para la jefatura
+        del P.E.
+    </div>
+    <div style="font-size: 10px; margin-top: 5px;">
+        <span style="color: red;">*</span> <span style="font-weight: bold;">Nota:</span> Ver sección 5 en ESDVI01
+        (Reglamento de Estadías).
+    </div>
+
+
+
+    <script src="/po.js"></script>
+</body>
+
+</html>

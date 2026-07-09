@@ -173,7 +173,10 @@ export const VinculacionDashboard: React.FC = () => {
                 <span className="font-semibold text-gray-700 group-hover:text-utcv-primary">Aperturar Nuevo Periodo</span>
                 <span className="text-xs text-gray-500 mt-1 text-center">Cierra el periodo actual y abre uno nuevo.</span>
               </button>
-              <button className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group">
+              <button 
+                onClick={() => navigate('/vinculacion/reportes')}
+                className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group"
+              >
                 <FileText className="text-gray-400 group-hover:text-blue-500 mb-3" size={32} />
                 <span className="font-semibold text-gray-700 group-hover:text-blue-600">Generar Reporte Global</span>
                 <span className="text-xs text-gray-500 mt-1 text-center">Exporta el avance de todos los alumnos en el periodo actual.</span>
@@ -258,7 +261,7 @@ export const VinculacionDashboard: React.FC = () => {
         </>
       )}
 
-      {/* Modal de Visor de Expediente (Solo Lectura) */}
+      {/* Modal de Visor de Expediente (Solo Lectura — visualiza aprobaciones de Maestro y Jefe) */}
       <TramiteModal
         tramiteActivo={tramiteActivo}
         loadingTramite={loadingTramite}
@@ -268,6 +271,7 @@ export const VinculacionDashboard: React.FC = () => {
         handleEvaluar={() => {}}
         cerrarRevision={cerrarExpediente}
         soloLectura={true}
+        rolUsuario="VINCULACION"
       />
 
       {/* Modal de Apertura de Periodo */}

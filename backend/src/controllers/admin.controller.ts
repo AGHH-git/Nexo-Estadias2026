@@ -228,7 +228,7 @@ export const getTramiteMaestro = async (req: Request, res: Response) => {
 
 export const evaluarTramiteMaestro = async (req: Request, res: Response) => {
   const { matricula } = req.params;
-  const { estatus, comentarios } = req.body;
+  const { estatus, comentarios, nss_rechazado, ine_tutor_rechazado } = req.body;
   const usuarioId = (req as any).usuario.id;
 
   if (!estatus) {
@@ -246,10 +246,19 @@ export const evaluarTramiteMaestro = async (req: Request, res: Response) => {
     }
     const tramiteId = tramiteResult.rows[0].id;
 
-    // Actualizar el estatus
+    const isRechazado = estatus === 'Rechazado Digital';
+    const nssRech = isRechazado ? !!nss_rechazado : false;
+    const ineRech = isRechazado ? !!ine_tutor_rechazado : false;
+
+    // Actualizar el estatus y las banderas
     await pool.query(
-      'UPDATE tramites_estadia SET estatus = $1, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $2', 
-      [estatus, tramiteId]
+      `UPDATE tramites_estadia 
+       SET estatus = $1, 
+           nss_rechazado = $2, 
+           ine_tutor_rechazado = $3, 
+           fecha_actualizacion = CURRENT_TIMESTAMP 
+       WHERE id = $4`, 
+      [estatus, nssRech, ineRech, tramiteId]
     );
 
     // Si hay observaciones o si se rechazó, guardar en el historial
@@ -264,7 +273,7 @@ export const evaluarTramiteMaestro = async (req: Request, res: Response) => {
     // Registrar en auditoria
     await pool.query(
       'INSERT INTO logs_auditoria (usuario_id, accion, detalles) VALUES ($1, $2, $3)',
-      [usuarioId, 'EVALUACION_TRAMITE', `Maestro ID ${maestroId} cambió estatus de matrícula ${matricula} a ${estatus}`]
+      [usuarioId, 'EVALUACION_TRAMITE', `Maestro ID ${maestroId} cambió estatus de matrícula ${matricula} a ${estatus} (NSS Rechazado: ${nssRech}, INE Rechazado: ${ineRech})`]
     );
 
     return res.json({ mensaje: 'La evaluación se ha guardado correctamente' });
@@ -564,3 +573,346 @@ export const asignarMaestroMasivo = async (req: Request, res: Response) => {
     client.release();
   }
 };
+
+/**
+ * Aprobar un documento individual (NSS, INE Tutor o Evidencia) por Maestro o Jefe de Carrera.
+ * Registra el nombre del usuario y la fecha/hora de aprobación.
+ */
+export const aprobarDocumento = async (req: Request, res: Response) => {
+  const { tramite_id, documento, rol } = req.body;
+  const usuarioId = (req as any).usuario.id;
+
+  // Validar parámetros
+  const documentosValidos = ['nss', 'ine_tutor', 'evidencia'];
+  const rolesValidos = ['maestro', 'jefe'];
+
+  if (!tramite_id || !documento || !rol) {
+    return res.status(400).json({ mensaje: 'Se requieren tramite_id, documento y rol.' });
+  }
+  if (!documentosValidos.includes(documento)) {
+    return res.status(400).json({ mensaje: `Documento inválido. Válidos: ${documentosValidos.join(', ')}` });
+  }
+  if (!rolesValidos.includes(rol)) {
+    return res.status(400).json({ mensaje: `Rol inválido. Válidos: ${rolesValidos.join(', ')}` });
+  }
+
+  try {
+    // Obtener nombre del usuario aprobador
+    let nombreAprobador = '';
+
+    if (rol === 'maestro') {
+      const maestroResult = await pool.query(
+        'SELECT nombre_completo FROM maestros WHERE usuario_id = $1',
+        [usuarioId]
+      );
+      if (maestroResult.rows.length === 0) {
+        return res.status(403).json({ mensaje: 'El usuario no es un maestro registrado.' });
+      }
+      nombreAprobador = maestroResult.rows[0].nombre_completo;
+    } else if (rol === 'jefe') {
+      const jefeResult = await pool.query(`
+        SELECT m.nombre_completo 
+        FROM jefes_carrera j
+        JOIN maestros m ON m.usuario_id = j.usuario_id
+        WHERE j.usuario_id = $1
+      `, [usuarioId]);
+
+      if (jefeResult.rows.length === 0) {
+        // Intentar obtener nombre de maestros directamente
+        const maestroResult = await pool.query(
+          'SELECT nombre_completo FROM maestros WHERE usuario_id = $1',
+          [usuarioId]
+        );
+        if (maestroResult.rows.length > 0) {
+          nombreAprobador = maestroResult.rows[0].nombre_completo;
+        } else {
+          // Usar identificador del usuario como fallback
+          const userResult = await pool.query('SELECT identificador FROM usuarios WHERE id = $1', [usuarioId]);
+          nombreAprobador = userResult.rows[0]?.identificador || 'Jefe de Carrera';
+        }
+      } else {
+        nombreAprobador = jefeResult.rows[0].nombre_completo;
+      }
+    }
+
+    // Validar que el trámite existe y tiene el documento
+    const tramiteResult = await pool.query(
+      'SELECT id, ruta_nss, ruta_ine_tutor, ruta_evidencia FROM tramites_estadia WHERE id = $1',
+      [tramite_id]
+    );
+    if (tramiteResult.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Trámite no encontrado.' });
+    }
+
+    const tramite = tramiteResult.rows[0];
+    const rutaMap: Record<string, string> = {
+      nss: tramite.ruta_nss,
+      ine_tutor: tramite.ruta_ine_tutor,
+      evidencia: tramite.ruta_evidencia
+    };
+
+    // Nombre del documento para la columna (ine_tutor → ine)
+    const docKey = documento === 'ine_tutor' ? 'ine' : documento;
+
+    if (!rutaMap[documento]) {
+      return res.status(400).json({ mensaje: 'El documento indicado no ha sido subido por el alumno.' });
+    }
+
+    // Construir nombres de columnas dinámicamente
+    const colAprobado = `aprobacion_${docKey}_${rol}`;
+    const colNombre = `aprobacion_${docKey}_${rol}_nombre`;
+    const colFecha = `aprobacion_${docKey}_${rol}_fecha`;
+
+    // Actualizar aprobación
+    await pool.query(
+      `UPDATE tramites_estadia 
+       SET ${colAprobado} = TRUE, 
+           ${colNombre} = $1, 
+           ${colFecha} = CURRENT_TIMESTAMP,
+           fecha_actualizacion = CURRENT_TIMESTAMP
+       WHERE id = $2`,
+      [nombreAprobador, tramite_id]
+    );
+
+    // Registrar en auditoría
+    await pool.query(
+      'INSERT INTO logs_auditoria (usuario_id, accion, detalles) VALUES ($1, $2, $3)',
+      [
+        usuarioId,
+        'APROBACION_DOCUMENTO',
+        `${nombreAprobador} (${rol}) aprobó el documento "${documento}" del trámite ID ${tramite_id}`
+      ]
+    );
+
+    // Retornar la aprobación registrada con timestamp
+    const updatedResult = await pool.query(
+      `SELECT ${colAprobado} as aprobado, ${colNombre} as nombre, ${colFecha} as fecha FROM tramites_estadia WHERE id = $1`,
+      [tramite_id]
+    );
+
+    return res.json({
+      mensaje: `Documento "${documento}" aprobado correctamente por ${nombreAprobador}.`,
+      aprobacion: updatedResult.rows[0]
+    });
+  } catch (error) {
+    console.error('Error al aprobar documento:', error);
+    return res.status(500).json({ mensaje: 'Error interno al registrar la aprobación del documento.' });
+  }
+};
+
+// ========================
+// ADMINISTRACIÓN DE USUARIOS Y CARGA MASIVA
+// ========================
+
+import exceljs from 'exceljs';
+import bcrypt from 'bcrypt';
+
+export const cargarAlumnosMasivo = async (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({ mensaje: 'No se ha proporcionado ningún archivo.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const workbook = new exceljs.Workbook();
+    await workbook.xlsx.load(req.file.buffer as any);
+    const worksheet = workbook.worksheets[0];
+
+    const resultados = {
+      procesados: 0,
+      exitosos: 0,
+      errores: [] as string[]
+    };
+
+    const hashGenerico = await bcrypt.hash('123456', 10);
+
+    // Iterar desde la fila 2 asumiendo que la 1 tiene los encabezados
+    // Columnas esperadas: 1: matricula, 2: nombre_completo, 3: carrera
+    await client.query('BEGIN');
+
+    for (let i = 2; i <= worksheet.rowCount; i++) {
+      const row = worksheet.getRow(i);
+      const matricula = row.getCell(1).value?.toString().trim();
+      const nombre_completo = row.getCell(2).value?.toString().trim();
+      const carrera = row.getCell(3).value?.toString().trim();
+
+      if (!matricula || !nombre_completo || !carrera) {
+        if (matricula || nombre_completo || carrera) { // Si la fila no está totalmente vacía
+           resultados.errores.push(`Fila ${i}: Datos incompletos (requiere matrícula, nombre y carrera).`);
+        }
+        continue;
+      }
+
+      resultados.procesados++;
+
+      try {
+        // Insertar en usuarios
+        const userInsertQuery = `
+          INSERT INTO usuarios (identificador, password_hash, rol, requiere_cambio_password)
+          VALUES ($1, $2, 'ALUMNO', true)
+          ON CONFLICT (identificador) DO NOTHING
+          RETURNING id
+        `;
+        const userResult = await client.query(userInsertQuery, [matricula, hashGenerico]);
+        
+        let usuarioId;
+        if (userResult.rows.length === 0) {
+          // Si el usuario ya existe, obtenemos su ID
+          const existingUser = await client.query('SELECT id FROM usuarios WHERE identificador = $1', [matricula]);
+          usuarioId = existingUser.rows[0].id;
+        } else {
+          usuarioId = userResult.rows[0].id;
+        }
+
+        // Insertar en alumnos
+        const alumnoInsertQuery = `
+          INSERT INTO alumnos (matricula, usuario_id, nombre_completo, carrera)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (matricula) DO UPDATE SET
+            nombre_completo = EXCLUDED.nombre_completo,
+            carrera = EXCLUDED.carrera
+        `;
+        await client.query(alumnoInsertQuery, [matricula, usuarioId, nombre_completo, carrera]);
+
+        resultados.exitosos++;
+      } catch (err: any) {
+        resultados.errores.push(`Fila ${i} (${matricula}): ${err.message}`);
+      }
+    }
+
+    await client.query('COMMIT');
+
+    // Registrar en auditoría
+    const usuarioLog = (req as any).usuario.id;
+    await pool.query(
+      'INSERT INTO logs_auditoria (usuario_id, accion, detalles) VALUES ($1, $2, $3)',
+      [usuarioLog, 'CARGA_MASIVA_ALUMNOS', `Se procesaron ${resultados.procesados} registros, ${resultados.exitosos} exitosos.`]
+    );
+
+    return res.status(200).json({
+      mensaje: 'Carga masiva finalizada.',
+      resultados
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en cargarAlumnosMasivo:', error);
+    return res.status(500).json({ mensaje: 'Error al procesar el archivo Excel.' });
+  } finally {
+    client.release();
+  }
+};
+
+export const getUsuarios = async (req: Request, res: Response) => {
+  try {
+    const query = `
+      SELECT 
+        u.id, u.identificador, u.rol, u.activo, u.creado_en,
+        COALESCE(a.nombre_completo, m.nombre_completo, j.nombre_completo, 'Usuario de Vinculación') as nombre_completo
+      FROM usuarios u
+      LEFT JOIN alumnos a ON u.id = a.usuario_id
+      LEFT JOIN maestros m ON u.id = m.usuario_id
+      LEFT JOIN jefes_carrera j ON u.id = j.usuario_id
+      ORDER BY u.id DESC
+    `;
+    const result = await pool.query(query);
+    return res.json(result.rows);
+  } catch (error) {
+    console.error('Error en getUsuarios:', error);
+    return res.status(500).json({ mensaje: 'Error al obtener usuarios.' });
+  }
+};
+
+export const crearUsuario = async (req: Request, res: Response) => {
+  const { identificador, password, rol, nombre_completo, ...extraData } = req.body;
+
+  if (!identificador || !password || !rol || !nombre_completo) {
+    return res.status(400).json({ mensaje: 'Faltan campos obligatorios.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const existUser = await client.query('SELECT id FROM usuarios WHERE identificador = $1', [identificador]);
+    if (existUser.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ mensaje: 'El identificador ya está en uso.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const userResult = await client.query(
+      'INSERT INTO usuarios (identificador, password_hash, rol, requiere_cambio_password) VALUES ($1, $2, $3, true) RETURNING id',
+      [identificador, passwordHash, rol]
+    );
+    const usuarioId = userResult.rows[0].id;
+
+    if (rol === 'MAESTRO') {
+      await client.query(
+        'INSERT INTO maestros (usuario_id, nombre_completo, area_adscripcion, cargo, telefono, extension) VALUES ($1, $2, $3, $4, $5, $6)',
+        [usuarioId, nombre_completo, extraData.area_adscripcion || 'Sin Área', extraData.cargo || 'Docente', extraData.telefono || null, extraData.extension || null]
+      );
+    } else if (rol === 'JEFE_CARRERA') {
+      await client.query(
+        'INSERT INTO jefes_carrera (usuario_id, nombre_completo, carrera) VALUES ($1, $2, $3)',
+        [usuarioId, nombre_completo, extraData.carrera || 'General']
+      );
+    }
+    // Vinculacion solo necesita el usuario en 'usuarios', no tiene tabla extra de momento.
+
+    const usuarioAdminId = (req as any).usuario.id;
+    await client.query(
+      'INSERT INTO logs_auditoria (usuario_id, accion, detalles) VALUES ($1, $2, $3)',
+      [usuarioAdminId, 'CREAR_USUARIO', `Usuario ${identificador} con rol ${rol} creado.`]
+    );
+
+    await client.query('COMMIT');
+    return res.status(201).json({ mensaje: 'Usuario creado exitosamente.' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error en crearUsuario:', error);
+    return res.status(500).json({ mensaje: 'Error interno al crear usuario.' });
+  } finally {
+    client.release();
+  }
+};
+
+export const toggleEstadoUsuario = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    // Evitar que el admin se desactive a sí mismo (opcional pero buena práctica)
+    const adminId = (req as any).usuario.id;
+    if (parseInt(id) === adminId) {
+      return res.status(400).json({ mensaje: 'No puedes desactivar tu propia cuenta.' });
+    }
+
+    const result = await pool.query(
+      'UPDATE usuarios SET activo = NOT activo WHERE id = $1 RETURNING activo, identificador',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
+    }
+
+    const nuevoEstado = result.rows[0].activo;
+    const identificador = result.rows[0].identificador;
+
+    await pool.query(
+      'INSERT INTO logs_auditoria (usuario_id, accion, detalles) VALUES ($1, $2, $3)',
+      [adminId, 'CAMBIO_ESTADO_USUARIO', `Usuario ${identificador} (ID: ${id}) ahora es ${nuevoEstado ? 'Activo' : 'Inactivo'}`]
+    );
+
+    return res.status(200).json({ 
+      mensaje: `Usuario marcado como ${nuevoEstado ? 'activo' : 'inactivo'}.`,
+      activo: nuevoEstado
+    });
+  } catch (error) {
+    console.error('Error en toggleEstadoUsuario:', error);
+    return res.status(500).json({ mensaje: 'Error al cambiar estado del usuario.' });
+  }
+};
+
+// ========================
+// ADMINISTRACIÓN DE USUARIOS Y CARGA MASIVA
+// ========================

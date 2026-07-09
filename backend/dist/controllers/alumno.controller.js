@@ -12,14 +12,17 @@ const obtenerPerfil = async (req, res) => {
       SELECT 
         a.matricula,
         a.nombre_completo,
-        a.carrera,
-        a.campus,
-        a.sistema,
+        c.nombre as carrera,
+        camp.nombre as campus,
+        mod.nombre as sistema,
         a.nss,
         a.telefono,
         u.identificador
       FROM alumnos a
       INNER JOIN usuarios u ON a.usuario_id = u.id
+      LEFT JOIN cat_carreras c ON a.carrera_id = c.id
+      LEFT JOIN cat_campus camp ON a.campus_id = camp.id
+      LEFT JOIN cat_modalidades mod ON a.modalidad_id = mod.id
       WHERE u.id = $1
     `;
         const resultAlumno = await database_1.pool.query(queryAlumno, [req.usuario.id]);
@@ -40,6 +43,9 @@ const obtenerPerfil = async (req, res) => {
         const asesorAsignado = resultAsesor.rows.length > 0
             ? resultAsesor.rows[0].asesor_nombre
             : 'No asignado aún';
+        const queryPeriodo = `SELECT nombre, anio FROM periodos WHERE activo = true LIMIT 1`;
+        const resultPeriodo = await database_1.pool.query(queryPeriodo);
+        const periodo = resultPeriodo.rows.length > 0 ? resultPeriodo.rows[0] : null;
         return res.status(200).json({
             matricula: alumno.matricula,
             nombre_completo: alumno.nombre_completo,
@@ -49,7 +55,9 @@ const obtenerPerfil = async (req, res) => {
             nss: alumno.nss,
             telefono: alumno.telefono,
             email: alumno.identificador,
-            asesor_academico: asesorAsignado
+            asesor_academico: asesorAsignado,
+            periodo_nombre: periodo?.nombre || '',
+            periodo_anio: periodo?.anio || null
         });
     }
     catch (error) {

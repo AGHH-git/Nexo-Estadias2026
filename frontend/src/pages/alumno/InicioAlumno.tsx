@@ -35,6 +35,10 @@ export const InicioAlumno: React.FC = () => {
     }
   };
 
+  const handleImprimirFormato = () => {
+    window.open('/fodvic.html', '_blank');
+  };
+
   useEffect(() => {
     cargarResumen();
   }, []);
@@ -245,6 +249,37 @@ export const InicioAlumno: React.FC = () => {
                       </button>
                     </div>
                   </div>
+
+                  {/* Tarjeta FODVI08: Imprimir Formato (solo visible si aprobado o completado) */}
+                  {(estatusActual === 'Aprobado para Firmas' || estatusActual === 'Completado') && (
+                    <div className="bg-white rounded-utcv shadow-utcv hover:shadow-lg border border-blue-100 overflow-hidden group transition-all duration-300 flex flex-col">
+                      <div className="p-6 flex-1 space-y-4">
+                        <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                          </svg>
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="text-lg font-bold text-gray-950">Imprimir Formato FODVI08</h4>
+                          <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                            Abre el formato oficial de registro de estadías prellenado con tus datos. Solo presiona Ctrl+P para imprimirlo.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex items-center justify-between">
+                        <button
+                          id="btn-imprimir-fodvi08"
+                          onClick={handleImprimirFormato}
+                          className="text-xs font-bold text-blue-600 group-hover:underline flex items-center space-x-1 uppercase tracking-wider"
+                        >
+                          <span>Imprimir Formato</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Tarjeta 3: Reglamento y Requisitos */}
                   <div className="bg-white rounded-utcv shadow-utcv hover:shadow-lg border border-gray-150 overflow-hidden group transition-all duration-300 flex flex-col md:col-span-2">

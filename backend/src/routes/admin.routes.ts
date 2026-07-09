@@ -13,11 +13,32 @@ import {
   getAlumnosVinculacion,
   getMaestrosConAlumnos,
   desasignarMaestro,
-  asignarMaestroMasivo
+  asignarMaestroMasivo,
+  aprobarDocumento,
+  cargarAlumnosMasivo,
+  getUsuarios,
+  crearUsuario,
+  toggleEstadoUsuario
 } from '../controllers/admin.controller';
+import {
+  getReporteStats,
+  descargarReporteExcel,
+  getReporteCarreras,
+  getReportePeriodos,
+  getReporteCategorias
+} from '../controllers/reportes.controller';
+import { getAuditoriaLogs } from '../controllers/auditoria.controller';
 import { verificarToken, autorizarRoles } from '../middleware/auth.middleware';
 
 const router = Router();
+
+router.get('/vinculacion/auditoria', verificarToken, autorizarRoles(['VINCULACION']), getAuditoriaLogs);
+
+router.get('/reportes/categorias', verificarToken, autorizarRoles(['VINCULACION', 'JEFE_CARRERA']), getReporteCategorias);
+router.get('/reportes/stats', verificarToken, autorizarRoles(['VINCULACION', 'JEFE_CARRERA']), getReporteStats);
+router.get('/reportes/excel', verificarToken, autorizarRoles(['VINCULACION', 'JEFE_CARRERA']), descargarReporteExcel);
+router.get('/reportes/carreras', verificarToken, autorizarRoles(['VINCULACION', 'JEFE_CARRERA']), getReporteCarreras);
+router.get('/reportes/periodos', verificarToken, autorizarRoles(['VINCULACION', 'JEFE_CARRERA']), getReportePeriodos);
 
 // Rutas protegidas por token y rol
 router.get('/vinculacion/stats', verificarToken, autorizarRoles(['VINCULACION']), getVinculacionStats);
@@ -43,5 +64,22 @@ router.get('/tramite/:matricula', verificarToken, autorizarRoles(['JEFE_CARRERA'
 router.get('/maestro/tramite/:matricula', verificarToken, autorizarRoles(['MAESTRO']), getTramiteMaestro);
 router.post('/maestro/evaluar/:matricula', verificarToken, autorizarRoles(['MAESTRO']), evaluarTramiteMaestro);
 
+// Rutas para aprobación de documento individual (Maestro y Jefe de Carrera)
+router.post('/aprobar-documento', verificarToken, autorizarRoles(['MAESTRO', 'JEFE_CARRERA']), aprobarDocumento);
+
+// ========================
+// ADMINISTRACIÓN DE USUARIOS
+// ========================
+
+// Multer en memoria para carga masiva
+import multer from 'multer';
+const uploadMemory = multer({ storage: multer.memoryStorage() });
+
+router.post('/usuarios/cargar-alumnos', verificarToken, autorizarRoles(['VINCULACION']), uploadMemory.single('file'), cargarAlumnosMasivo);
+router.get('/usuarios', verificarToken, autorizarRoles(['VINCULACION']), getUsuarios);
+router.post('/usuarios', verificarToken, autorizarRoles(['VINCULACION']), crearUsuario);
+router.put('/usuarios/:id/estado', verificarToken, autorizarRoles(['VINCULACION']), toggleEstadoUsuario);
+
 export default router;
+
 

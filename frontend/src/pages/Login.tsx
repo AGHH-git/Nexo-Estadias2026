@@ -308,6 +308,18 @@ export const Login: React.FC = () => {
               )}
             </div>
 
+            {/* Link Olvidé mi contraseña */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => navigate('/olvide-password')}
+                className="text-xs font-semibold hover:underline"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+
             {/* Botón Ingresar */}
             <button
               type="submit"

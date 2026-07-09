@@ -52,15 +52,25 @@ export const Tramite: React.FC = () => {
     alcance: '',
     linea_investigacion: '',
     producto_generar: '',
+    area_empresa: '',
 
     horario_alumno: '',
     fecha_inicio: '',
     fecha_termino: '',
     modalidad_estadia: 'Local',
+    
+    eval_parcial: '',
+    eval_final: '',
+    seguimiento_alumno: '',
+    seguimiento_dias: '',
+    contacto_asesor: '',
+    contacto_dias: '',
 
     ruta_nss: '',
     ruta_ine_tutor: '',
     ruta_evidencia: '',
+    nss_rechazado: false,
+    ine_tutor_rechazado: false,
     observaciones: [],
   });
 
@@ -116,15 +126,25 @@ export const Tramite: React.FC = () => {
           alcance: tramite.alcance || '',
           linea_investigacion: tramite.linea_investigacion || '',
           producto_generar: tramite.producto_generar || '',
+          area_empresa: tramite.area_empresa || '',
 
           horario_alumno: tramite.horario_alumno || '',
           fecha_inicio: tramite.fecha_inicio ? tramite.fecha_inicio.split('T')[0] : '',
           fecha_termino: tramite.fecha_termino ? tramite.fecha_termino.split('T')[0] : '',
           modalidad_estadia: tramite.modalidad_estadia || 'Local',
 
+          eval_parcial: tramite.eval_parcial ? tramite.eval_parcial.split('T')[0] : '',
+          eval_final: tramite.eval_final ? tramite.eval_final.split('T')[0] : '',
+          seguimiento_alumno: tramite.seguimiento_alumno || '',
+          seguimiento_dias: tramite.seguimiento_dias || '',
+          contacto_asesor: tramite.contacto_asesor || '',
+          contacto_dias: tramite.contacto_dias || '',
+
           ruta_nss: tramite.ruta_nss || '',
           ruta_ine_tutor: tramite.ruta_ine_tutor || '',
           ruta_evidencia: tramite.ruta_evidencia || '',
+          nss_rechazado: !!tramite.nss_rechazado,
+          ine_tutor_rechazado: !!tramite.ine_tutor_rechazado,
           observaciones: tramite.observaciones || [],
         });
 

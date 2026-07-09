@@ -283,6 +283,13 @@ export const Fase4Logistica: React.FC<Fase4Props> = ({
       nuevosErrores.ine_tutor = 'Es obligatorio subir la copia del INE del tutor para la modalidad foránea.';
     }
 
+    if (!formData.eval_parcial) nuevosErrores.eval_parcial = 'Obligatorio.';
+    if (!formData.eval_final) nuevosErrores.eval_final = 'Obligatorio.';
+    if (!formData.seguimiento_alumno) nuevosErrores.seguimiento_alumno = 'Obligatorio.';
+    if (!formData.seguimiento_dias) nuevosErrores.seguimiento_dias = 'Obligatorio.';
+    if (!formData.contacto_asesor) nuevosErrores.contacto_asesor = 'Obligatorio.';
+    if (!formData.contacto_dias) nuevosErrores.contacto_dias = 'Obligatorio.';
+
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
@@ -555,6 +562,60 @@ export const Fase4Logistica: React.FC<Fase4Props> = ({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Evaluación y Seguimiento */}
+      <div className="space-y-4 pt-4 border-t border-gray-100">
+        <h4 className="font-bold text-sm text-gray-950 uppercase tracking-wider border-l-4 border-utcv-primary pl-2">
+          Evaluación y Seguimiento
+        </h4>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Fecha de Evaluación Parcial</label>
+            <input type="date" name="eval_parcial" value={formData.eval_parcial || ''} onChange={handleDateChange} className="block w-full px-3 py-2.5 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none" />
+            {errores.eval_parcial && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.eval_parcial}</p>}
+          </div>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Fecha de Evaluación Final</label>
+            <input type="date" name="eval_final" value={formData.eval_final || ''} onChange={handleDateChange} className="block w-full px-3 py-2.5 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none" />
+            {errores.eval_final && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.eval_final}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Forma de seguimiento (Alumno)</label>
+            <select name="seguimiento_alumno" value={formData.seguimiento_alumno || ''} onChange={handleDateChange as any} className="block w-full px-3 py-2.5 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none">
+              <option value="">Selecciona...</option>
+              <option value="presencial">Presencial</option>
+              <option value="distancia">A distancia</option>
+            </select>
+            {errores.seguimiento_alumno && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.seguimiento_alumno}</p>}
+          </div>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Días y Horarios (Alumno)</label>
+            <input type="text" name="seguimiento_dias" placeholder="Ej: Lunes y Miércoles de 16:00 a 18:00 hrs" value={formData.seguimiento_dias || ''} onChange={handleDateChange} className="block w-full px-3 py-2.5 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none" />
+            {errores.seguimiento_dias && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.seguimiento_dias}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Forma de comunicación (Asesor Industrial)</label>
+            <select name="contacto_asesor" value={formData.contacto_asesor || ''} onChange={handleDateChange as any} className="block w-full px-3 py-2.5 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none">
+              <option value="">Selecciona...</option>
+              <option value="presencial">Presencial</option>
+              <option value="distancia">A distancia</option>
+            </select>
+            {errores.contacto_asesor && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.contacto_asesor}</p>}
+          </div>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Días y Horarios (Asesor Industrial)</label>
+            <input type="text" name="contacto_dias" placeholder="Ej: Viernes 10:00 a 11:00 hrs" value={formData.contacto_dias || ''} onChange={handleDateChange} className="block w-full px-3 py-2.5 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none" />
+            {errores.contacto_dias && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.contacto_dias}</p>}
+          </div>
+        </div>
       </div>
 
       {/* Botones de navegación */}

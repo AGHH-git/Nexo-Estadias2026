@@ -28,10 +28,19 @@ export const obtenerTramiteAlumno = async (req: AuthenticatedRequest, res: Respo
         t.*,
         e.razon_social, e.nombre_comercial, e.rfc, e.giro, e.tamano, e.tipo_empresa,
         e.estado, e.municipio, e.cp, e.domicilio, e.telefono as empresa_telefono,
-        m.nombre_completo as maestro_nombre
+        m.nombre_completo as maestro_nombre, m.area_adscripcion as maestro_area_adscripcion,
+        m.cargo as maestro_cargo, m.extension as maestro_extension, m.telefono as maestro_telefono,
+        a.nombre_completo, a.nss, a.telefono,
+        cc.nombre as carrera,
+        ca.nombre as campus,
+        mo.nombre as sistema
       FROM tramites_estadia t
       LEFT JOIN empresas e ON t.empresa_id = e.id
       LEFT JOIN maestros m ON t.maestro_id = m.id
+      LEFT JOIN alumnos a ON t.matricula = a.matricula
+      LEFT JOIN cat_carreras cc ON a.carrera_id = cc.id
+      LEFT JOIN cat_campus ca ON a.campus_id = ca.id
+      LEFT JOIN cat_modalidades mo ON a.modalidad_id = mo.id
       WHERE t.matricula = $1
       ORDER BY t.fecha_registro DESC
       LIMIT 1
@@ -164,8 +173,10 @@ export const crearTramite = async (req: AuthenticatedRequest, res: Response) => 
         asesor_ind_nombre, asesor_ind_cargo, asesor_ind_telefono, asesor_ind_email,
         nivel_academico, titulo_proyecto, problematica, alcance, producto_generar,
         horario_alumno, fecha_inicio, fecha_termino, estatus, ruta_nss,
-        modalidad_estadia, ruta_ine_tutor
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+        modalidad_estadia, ruta_ine_tutor,
+        linea_investigacion, area_empresa, eval_parcial, eval_final,
+        seguimiento_alumno, seguimiento_dias, contacto_asesor, contacto_dias
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)
       RETURNING id, estatus
     `;
     const resultTramite = await client.query(queryInsertTramite, [
@@ -188,7 +199,15 @@ export const crearTramite = async (req: AuthenticatedRequest, res: Response) => 
       'En Revisión Digital', // Pasa a revisión digital al enviar
       rutaNssRelativa,
       body.modalidad_estadia || 'Local',
-      rutaIneTutorRelativa
+      rutaIneTutorRelativa,
+      body.linea_investigacion || null,
+      body.area_empresa || null,
+      body.eval_parcial || null,
+      body.eval_final || null,
+      body.seguimiento_alumno || null,
+      body.seguimiento_dias || null,
+      body.contacto_asesor || null,
+      body.contacto_dias || null
     ]);
 
     const nuevoTramite = resultTramite.rows[0];
@@ -296,21 +315,29 @@ export const actualizarTramite = async (req: AuthenticatedRequest, res: Response
     }
 
     const paramsUpdate = [
-      body.asesor_ind_nombre, // $1
-      body.asesor_ind_cargo,  // $2
-      body.asesor_ind_telefono, // $3
-      body.asesor_ind_email,  // $4
-      body.nivel_academico,   // $5
-      body.titulo_proyecto,   // $6
-      body.problematica,      // $7
-      body.alcance,           // $8
-      body.producto_generar,  // $9
-      body.horario_alumno,    // $10
-      body.fecha_inicio,      // $11
-      body.fecha_termino,     // $12
-      'En Revisión Digital',  // $13
-      new Date(),             // $14
-      body.modalidad_estadia || 'Local' // $15
+      body.asesor_ind_nombre,          // $1
+      body.asesor_ind_cargo,           // $2
+      body.asesor_ind_telefono,        // $3
+      body.asesor_ind_email,           // $4
+      body.nivel_academico,            // $5
+      body.titulo_proyecto,            // $6
+      body.problematica,               // $7
+      body.alcance,                    // $8
+      body.producto_generar,           // $9
+      body.horario_alumno,             // $10
+      body.fecha_inicio,               // $11
+      body.fecha_termino,              // $12
+      'En Revisión Digital',           // $13
+      new Date(),                      // $14
+      body.modalidad_estadia || 'Local', // $15
+      body.linea_investigacion || null,  // $16
+      body.area_empresa || null,         // $17
+      body.eval_parcial || null,         // $18
+      body.eval_final || null,           // $19
+      body.seguimiento_alumno || null,   // $20
+      body.seguimiento_dias || null,     // $21
+      body.contacto_asesor || null,      // $22
+      body.contacto_dias || null         // $23
     ];
 
     let queryParts = [
@@ -328,7 +355,15 @@ export const actualizarTramite = async (req: AuthenticatedRequest, res: Response
       'fecha_termino = $12',
       'estatus = $13',
       'fecha_actualizacion = $14',
-      'modalidad_estadia = $15'
+      'modalidad_estadia = $15',
+      'linea_investigacion = $16',
+      'area_empresa = $17',
+      'eval_parcial = $18',
+      'eval_final = $19',
+      'seguimiento_alumno = $20',
+      'seguimiento_dias = $21',
+      'contacto_asesor = $22',
+      'contacto_dias = $23'
     ];
 
     if (empresaId) {
@@ -340,14 +375,17 @@ export const actualizarTramite = async (req: AuthenticatedRequest, res: Response
       const rutaNssRelativa = `nss/${nssFile.filename}`;
       paramsUpdate.push(rutaNssRelativa);
       queryParts.push(`ruta_nss = $${paramsUpdate.length}`);
+      queryParts.push(`nss_rechazado = false`);
     }
 
     if (ineTutorFile) {
       const rutaIneTutorRelativa = `ine_tutor/${ineTutorFile.filename}`;
       paramsUpdate.push(rutaIneTutorRelativa);
       queryParts.push(`ruta_ine_tutor = $${paramsUpdate.length}`);
+      queryParts.push(`ine_tutor_rechazado = false`);
     } else if (body.modalidad_estadia === 'Local') {
       queryParts.push(`ruta_ine_tutor = NULL`);
+      queryParts.push(`ine_tutor_rechazado = false`);
     }
 
     paramsUpdate.push(tramiteId);
@@ -481,11 +519,18 @@ export const descargarPDFPrefilled = async (req: AuthenticatedRequest, res: Resp
     const queryDatos = `
       SELECT 
         t.*,
-        a.nombre_completo as alumno_nombre, a.carrera, a.campus, a.sistema, a.nss, a.telefono as alumno_tel,
+        a.nombre_completo as alumno_nombre, 
+        c.nombre as carrera, 
+        cam.nombre as campus, 
+        mod.nombre as sistema, 
+        a.nss, a.telefono as alumno_tel,
         e.razon_social, e.nombre_comercial, e.rfc, e.domicilio as empresa_dir, e.telefono as empresa_tel,
         m.nombre_completo as asesor_ac_nombre, m.cargo as asesor_ac_cargo, m.area_adscripcion
       FROM tramites_estadia t
       INNER JOIN alumnos a ON t.matricula = a.matricula
+      LEFT JOIN cat_carreras c ON a.carrera_id = c.id
+      LEFT JOIN cat_campus cam ON a.campus_id = cam.id
+      LEFT JOIN cat_modalidades mod ON a.modalidad_id = mod.id
       INNER JOIN empresas e ON t.empresa_id = e.id
       INNER JOIN maestros m ON t.maestro_id = m.id
       WHERE t.id = $1
@@ -626,9 +671,26 @@ export const descargarPDFPrefilled = async (req: AuthenticatedRequest, res: Resp
     currentY -= 15;
     page.drawText(`Horario Registrado: ${datos.horario_alumno}`, { x: 40, y: currentY, size: 8, font: fontRegular });
 
-    // SECCIÓN 5: FIRMAS
+    // SECCIÓN 5: LOGÍSTICA DE EVALUACIÓN Y SEGUIMIENTO
+    currentY -= 30;
+    page.drawText('5. LOGÍSTICA DE EVALUACIÓN Y SEGUIMIENTO', { x: 30, y: currentY, size: 10, font: fontBold, color: colorPrimario });
+    page.drawLine({ start: { x: 30, y: currentY - 3 }, end: { x: width - 30, y: currentY - 3 }, thickness: 1, color: colorDorado });
+
+    currentY -= 20;
+    const fEvalParcial = datos.eval_parcial ? new Date(datos.eval_parcial).toLocaleDateString('es-MX') : 'No registrado';
+    const fEvalFinal = datos.eval_final ? new Date(datos.eval_final).toLocaleDateString('es-MX') : 'No registrado';
+    page.drawText(`Evaluación Parcial: ${fEvalParcial}`, { x: 40, y: currentY, size: 9, font: fontRegular });
+    page.drawText(`Evaluación Final: ${fEvalFinal}`, { x: 300, y: currentY, size: 9, font: fontRegular });
+
+    currentY -= 15;
+    page.drawText(`Seguimiento Alumno: ${datos.seguimiento_alumno || 'N/A'} - Días: ${datos.seguimiento_dias || 'N/A'}`, { x: 40, y: currentY, size: 9, font: fontRegular });
+    
+    currentY -= 15;
+    page.drawText(`Contacto Asesor: ${datos.contacto_asesor || 'N/A'} - Días: ${datos.contacto_dias || 'N/A'}`, { x: 40, y: currentY, size: 9, font: fontRegular });
+
+    // SECCIÓN 6: FIRMAS
     currentY -= 40;
-    page.drawText('5. FIRMAS DE AUTORIZACIÓN', { x: 30, y: currentY, size: 10, font: fontBold, color: colorPrimario });
+    page.drawText('6. FIRMAS DE AUTORIZACIÓN', { x: 30, y: currentY, size: 10, font: fontBold, color: colorPrimario });
     page.drawLine({ start: { x: 30, y: currentY - 3 }, end: { x: width - 30, y: currentY - 3 }, thickness: 1, color: colorDorado });
 
     currentY -= 40;

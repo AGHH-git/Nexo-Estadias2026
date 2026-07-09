@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/database';
 import { OAuth2Client } from 'google-auth-library';
+import nodemailer from 'nodemailer';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'utcv_super_secret_token_key_2026';
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -199,7 +200,9 @@ export const cambiarPassword = async (req: Request, res: Response) => {
     const usuario = userResult.rows[0];
 
     if (usuario.requiere_cambio_password && !isGoogleVerificado) {
-      return res.status(403).json({ mensaje: 'Debes verificar tu identidad con Google Institucional antes de cambiar tu contraseña.' });
+      if (process.env.DISABLE_GOOGLE_AUTH !== 'true') {
+        return res.status(403).json({ mensaje: 'Debes verificar tu identidad con Google Institucional antes de cambiar tu contraseña.' });
+      }
     }
 
     // Verificar la contraseña actual
@@ -290,3 +293,158 @@ export const verificarGoogle = async (req: Request, res: Response) => {
     return res.status(401).json({ mensaje: 'Token de Google inválido o configuración de cliente faltante.' });
   }
 };
+
+// ----------------------------------------------------------------------
+// Módulo: Olvidé mi contraseña
+// ----------------------------------------------------------------------
+let transporter: nodemailer.Transporter | null = null;
+
+const getTransporter = async () => {
+  if (transporter) return transporter;
+
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_PORT === '465',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  } else {
+    console.log("Creando cuenta de prueba Ethereal para correos...");
+    const testAccount = await nodemailer.createTestAccount();
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+  }
+  return transporter;
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { identificador } = req.body;
+  if (!identificador) {
+    return res.status(400).json({ mensaje: 'Por favor, ingresa tu matrícula o correo institucional.' });
+  }
+
+  try {
+    let identificadorLimpio = identificador.trim();
+    if (identificadorLimpio.toLowerCase().endsWith('@utcv.edu.mx')) {
+      identificadorLimpio = identificadorLimpio.split('@')[0];
+    }
+
+    const userQuery = 'SELECT id, identificador, password_hash, rol FROM usuarios WHERE LOWER(identificador) = LOWER($1) OR LOWER(identificador) = LOWER($2)';
+    const userResult = await pool.query(userQuery, [identificador.trim(), identificadorLimpio]);
+
+    if (userResult.rows.length === 0) {
+      // Para evitar enumeración de usuarios, respondemos con éxito incluso si no existe
+      return res.status(200).json({ mensaje: 'Si el identificador es válido, recibirás un correo con instrucciones.' });
+    }
+
+    const usuario = userResult.rows[0];
+    const correoInstitucional = usuario.identificador.includes('@') ? usuario.identificador : `${usuario.identificador}@utcv.edu.mx`;
+
+    // Generar un token con el hash del password para que se invalide si la contraseña cambia
+    const payload = {
+      id: usuario.id,
+      hash: usuario.password_hash
+    };
+    
+    // Token expira en 1 hora
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+
+    // URL del frontend
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+    const mailer = await getTransporter();
+    const info = await mailer.sendMail({
+      from: '"Sistema de Estadías UTCV" <no-reply@utcv.edu.mx>',
+      to: correoInstitucional,
+      subject: 'Recuperación de Contraseña - UTCV',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color: #2c3e50; text-align: center;">Recuperación de Contraseña</h2>
+          <p>Hola,</p>
+          <p>Has solicitado restablecer tu contraseña en el Sistema de Estadías UTCV.</p>
+          <p>Haz clic en el siguiente botón para crear una nueva contraseña. Este enlace expira en 1 hora.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Restablecer Contraseña</a>
+          </div>
+          <p>Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+          <p style="word-break: break-all; color: #7f8c8d; font-size: 14px;">${resetUrl}</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="font-size: 12px; color: #95a5a6; text-align: center;">Si no solicitaste este cambio, puedes ignorar este correo.</p>
+        </div>
+      `
+    });
+
+    // Si es cuenta de prueba, imprimir url para ver el correo
+    if (nodemailer.getTestMessageUrl(info)) {
+      console.log('--- URL del correo de recuperación de prueba ---');
+      console.log(nodemailer.getTestMessageUrl(info));
+      console.log('------------------------------------------------');
+    }
+
+    return res.status(200).json({ 
+      mensaje: 'Si el identificador es válido, recibirás un correo con instrucciones.' 
+    });
+  } catch (error) {
+    console.error('Error en forgotPassword:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al procesar la solicitud.' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ mensaje: 'Datos incompletos.' });
+  }
+
+  try {
+    // Verificar token (falla si está expirado o si el formato no es válido)
+    const decoded: any = jwt.verify(token, JWT_SECRET);
+
+    // Buscar al usuario
+    const userResult = await pool.query('SELECT id, password_hash FROM usuarios WHERE id = $1', [decoded.id]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
+    }
+
+    const usuario = userResult.rows[0];
+
+    // Verificar que el hash de la contraseña no haya cambiado (esto previene que el token se use más de una vez)
+    if (decoded.hash !== usuario.password_hash) {
+      return res.status(400).json({ mensaje: 'Este enlace de recuperación ya ha sido utilizado o no es válido.' });
+    }
+
+    // Hashear nueva contraseña
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+    // Actualizar contraseña
+    await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [newPasswordHash, usuario.id]);
+
+    // Registrar en auditoría
+    await pool.query(
+      'INSERT INTO logs_auditoria (usuario_id, accion, detalles) VALUES ($1, $2, $3)',
+      [usuario.id, 'RECUPERAR_PASSWORD', 'Recuperación de contraseña mediante enlace de correo']
+    );
+
+    return res.status(200).json({ mensaje: 'Tu contraseña ha sido restablecida con éxito. Ya puedes iniciar sesión.' });
+  } catch (error: any) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(400).json({ mensaje: 'El enlace de recuperación ha expirado. Por favor, solicita uno nuevo.' });
+    }
+    console.error('Error en resetPassword:', error);
+    return res.status(400).json({ mensaje: 'El enlace de recuperación es inválido.' });
+  }
+};
+

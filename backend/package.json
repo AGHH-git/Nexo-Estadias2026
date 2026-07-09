@@ -13,7 +13,7 @@
   "author": "UTCV",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
@@ -21,6 +21,7 @@
     "google-auth-library": "^10.7.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^9.0.3",
     "pdf-lib": "^1.17.1",
     "pg": "^8.11.5"
   },
@@ -31,6 +32,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.12.12",
+    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.11.6",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",

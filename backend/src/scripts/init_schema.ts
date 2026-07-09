@@ -90,7 +90,15 @@ async function init() {
         fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         modalidad_estadia VARCHAR(50) DEFAULT 'Local',
-        ruta_ine_tutor VARCHAR(255)
+        ruta_ine_tutor VARCHAR(255),
+        linea_investigacion VARCHAR(200),
+        area_empresa VARCHAR(150),
+        eval_parcial DATE,
+        eval_final DATE,
+        seguimiento_alumno VARCHAR(50),
+        seguimiento_dias VARCHAR(200),
+        contacto_asesor VARCHAR(50),
+        contacto_dias VARCHAR(200)
       );
 
       CREATE TABLE IF NOT EXISTS historial_observaciones (

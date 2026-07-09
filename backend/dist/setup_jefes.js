@@ -20,7 +20,7 @@ async function run() {
         INSERT INTO jefes_carrera (usuario_id, nombre_completo, carrera) 
         VALUES ($1, $2, $3) 
         ON CONFLICT DO NOTHING
-      `, [u.rows[0].id, 'Jefe de Sistemas', 'Ingeniería en Desarrollo y Gestión de Software']);
+      `, [u.rows[0].id, 'Jefe de Sistemas', 'Ing. en Desarrollo y Gestión de Software']);
         }
         console.log('Tabla y jefe de carrera creados/verificados con exito');
     }

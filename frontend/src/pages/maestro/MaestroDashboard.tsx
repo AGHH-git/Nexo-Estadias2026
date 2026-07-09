@@ -74,7 +74,11 @@ export const MaestroDashboard: React.FC = () => {
     setComentarios('');
   };
 
-  const handleEvaluar = async (nuevoEstatus: 'Aprobado para Firmas' | 'Rechazado Digital') => {
+  const handleEvaluar = async (
+    nuevoEstatus: 'Aprobado para Firmas' | 'Rechazado Digital',
+    nssRechazado?: boolean,
+    ineRechazado?: boolean
+  ) => {
     if (nuevoEstatus === 'Rechazado Digital' && !comentarios.trim()) {
       alert('Debes ingresar observaciones detalladas si vas a rechazar el trámite.');
       return;
@@ -88,7 +92,9 @@ export const MaestroDashboard: React.FC = () => {
     try {
       await api.post(`/admin/maestro/evaluar/${tramiteActivo.matricula}`, {
         estatus: nuevoEstatus,
-        comentarios: comentarios.trim()
+        comentarios: comentarios.trim(),
+        nss_rechazado: nssRechazado,
+        ine_tutor_rechazado: ineRechazado
       });
       alert(`Trámite ${nuevoEstatus} correctamente.`);
       cerrarRevision();
@@ -242,6 +248,10 @@ export const MaestroDashboard: React.FC = () => {
         handleEvaluar={handleEvaluar}
         cerrarRevision={cerrarRevision}
         soloLectura={false}
+        rolUsuario="MAESTRO"
+        onDocumentoAprobado={(tramiteActualizado) => {
+          setTramiteActivo(tramiteActualizado);
+        }}
       />
 
     </div>

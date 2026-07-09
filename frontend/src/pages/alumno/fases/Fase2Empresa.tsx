@@ -337,6 +337,19 @@ export const Fase2Empresa: React.FC<Fase2Props> = ({
             />
             {errores.domicilio && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.domicilio}</p>}
           </div>
+
+          {/* Área de la Empresa */}
+          <div className="space-y-1 md:col-span-2">
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Área de la Empresa (si aplica)</label>
+            <input
+              type="text"
+              name="area_empresa"
+              value={formData.area_empresa || ''}
+              onChange={handleInputChange}
+              placeholder="Ej: Recursos Humanos, Sistemas, etc."
+              className="block w-full px-3 py-2 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none"
+            />
+          </div>
         </div>
 
         {/* Sección Asesor Industrial */}

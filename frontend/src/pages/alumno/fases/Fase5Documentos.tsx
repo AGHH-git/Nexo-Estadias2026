@@ -34,6 +34,11 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
   const [evidenciaError, setEvidenciaError] = useState('');
   const fileInputEvidenciaRef = useRef<HTMLInputElement>(null);
 
+  // Manejo de Archivo INE Tutor (cuando es rechazado e ingresado en esta fase)
+  const [localIneTutor, setLocalIneTutor] = useState<File | null>(null);
+  const [ineTutorError, setIneTutorError] = useState('');
+  const fileInputIneTutorRef = useRef<HTMLInputElement>(null);
+
   // Estados de carga y modal
   const [enviando, setEnviando] = useState(false);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
@@ -42,6 +47,33 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
   // Drag & drop states
   const [dragNssOver, setDragNssOver] = useState(false);
   const [dragEvidenciaOver, setDragEvidenciaOver] = useState(false);
+  const [dragIneTutorOver, setDragIneTutorOver] = useState(false);
+
+  const validarYEstablecerIneTutor = (file: File) => {
+    setIneTutorError('');
+    if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
+      setIneTutorError('El archivo debe ser un documento PDF (.pdf) o una imagen.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setIneTutorError('El tamaño del archivo no debe superar los 5MB.');
+      return;
+    }
+    setLocalIneTutor(file);
+  };
+
+  const handleDragOverIneTutor = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragIneTutorOver(true);
+  };
+  const handleDragLeaveIneTutor = () => setDragIneTutorOver(false);
+  const handleDropIneTutor = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragIneTutorOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      validarYEstablecerIneTutor(e.dataTransfer.files[0]);
+    }
+  };
 
   // Parsear horario para el resumen
   const [horarioResumen, setHorarioResumen] = useState('');
@@ -125,7 +157,7 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
       return;
     }
 
-    if (formData.modalidad_estadia === 'Foránea' && !archivoIneTutor && !formData.ruta_ine_tutor) {
+    if (formData.modalidad_estadia === 'Foránea' && !archivoIneTutor && !localIneTutor && !formData.ruta_ine_tutor) {
       setErrorEnvio('Es obligatorio cargar la copia del INE del tutor para la modalidad foránea.');
       return;
     }
@@ -145,7 +177,9 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
       fd.append('nss', archivoNss);
     }
 
-    if (archivoIneTutor) {
+    if (localIneTutor) {
+      fd.append('ine_tutor', localIneTutor);
+    } else if (archivoIneTutor) {
       fd.append('ine_tutor', archivoIneTutor);
     }
 
@@ -176,23 +210,9 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
   };
 
   // Descargar formato FODVI08-H prellenado
-  const handleDescargarPDF = async () => {
+  const handleDescargarPDF = () => {
     if (!tramiteId) return;
-
-    try {
-      const response = await api.get(`/tramites/${tramiteId}/pdf`, {
-        responseType: 'blob',
-      });
-      
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.download = `FODVI08-H_PRELLENADO.pdf`;
-      link.click();
-    } catch (err) {
-      console.error('Error al descargar PDF:', err);
-      alert('Hubo un error al generar y descargar el archivo PDF.');
-    }
+    window.open('/fodvic.html', '_blank');
   };
 
   // Subir Evidencia Final firmada
@@ -520,6 +540,10 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
   // 3. VISTA RECHAZADO DIGITAL
   if (estatusActual === 'Rechazado Digital') {
     const observaciones = formData.observaciones || [];
+    const tieneRechazosDoc = formData.nss_rechazado || formData.ine_tutor_rechazado;
+    const faltaNss = formData.nss_rechazado && !archivoNss;
+    const faltaIne = formData.ine_tutor_rechazado && !localIneTutor;
+    const faltaArchivos = faltaNss || faltaIne;
 
     return (
       <div className="bg-white rounded-utcv shadow-utcv p-6 sm:p-8 space-y-6">
@@ -543,7 +567,9 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
           <div>
             <p className="font-bold">Solicitud Rechazada para Corrección</p>
             <p className="text-xs text-red-800 mt-0.5 font-medium">
-              Por favor, revisa las observaciones descritas abajo, edita la información en las fases correspondientes y reenvía el formulario a revisión.
+              {tieneRechazosDoc 
+                ? 'Se han detectado errores específicos en tus archivos cargados. Por favor, vuelve a subir los archivos indicados en rojo abajo y presiona reenviar.'
+                : 'Por favor, revisa las observaciones descritas abajo, edita la información en las fases correspondientes y reenvía el formulario a revisión.'}
             </p>
           </div>
         </div>
@@ -568,15 +594,161 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
           </div>
         )}
 
-        {/* Botón Editar y reescribir */}
-        <button
-          type="button"
-          onClick={() => onIrAPaso(2)} // Volver a los datos de la empresa
-          className="w-full py-2.5 text-center text-sm font-bold text-white rounded-utcv hover:bg-utcv-primary-dark transition-colors shadow-sm select-none"
-          style={{ backgroundColor: 'var(--color-primary)' }}
-        >
-          Editar información y volver a enviar
-        </button>
+        {/* Zonas de carga específicas para los archivos rechazados */}
+        {tieneRechazosDoc && (
+          <div className="space-y-4 pt-2">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Cargar archivos corregidos:</p>
+            
+            {/* Carga NSS si fue rechazado */}
+            {formData.nss_rechazado && (
+              <div className="space-y-2 border border-red-200 bg-red-50/10 p-4 rounded-lg">
+                <label className="block text-xs font-bold text-red-700 uppercase tracking-wider select-none">
+                  Constancia de Vigencia de Derechos NSS corregida (PDF, Máx. 5MB)
+                </label>
+                
+                <div
+                  onDragOver={handleDragOverNss}
+                  onDragLeave={handleDragLeaveNss}
+                  onDrop={handleDropNss}
+                  onClick={() => fileInputNssRef.current?.click()}
+                  className={`border-2 border-dashed rounded-utcv p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                    dragNssOver ? 'bg-red-50 border-red-300' : 'bg-white border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputNssRef}
+                    onChange={(e) => e.target.files?.[0] && validarYEstablecerNss(e.target.files[0])}
+                    accept=".pdf"
+                    className="hidden"
+                  />
+                  
+                  {archivoNss ? (
+                    <div className="flex flex-col items-center space-y-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="text-sm font-bold text-gray-800">{archivoNss.name}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setArchivoNss(null);
+                        }}
+                        className="px-2 py-1 text-xs bg-red-50 text-utcv-danger font-bold hover:bg-red-100 transition-colors rounded"
+                      >
+                        Quitar archivo
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-1 text-gray-500 select-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400 block mb-1 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                      <p className="text-xs font-semibold text-gray-700">Arrastra tu NSS corregido o haz clic</p>
+                    </div>
+                  )}
+                </div>
+                {nssError && <p className="text-xs text-utcv-danger font-medium mt-1">{nssError}</p>}
+              </div>
+            )}
+
+            {/* Carga INE Tutor si fue rechazado */}
+            {formData.ine_tutor_rechazado && (
+              <div className="space-y-2 border border-red-200 bg-red-50/10 p-4 rounded-lg">
+                <label className="block text-xs font-bold text-red-700 uppercase tracking-wider select-none">
+                  INE del Tutor corregido (PDF o Imagen, Máx. 5MB)
+                </label>
+                
+                <div
+                  onDragOver={handleDragOverIneTutor}
+                  onDragLeave={handleDragLeaveIneTutor}
+                  onDrop={handleDropIneTutor}
+                  onClick={() => fileInputIneTutorRef.current?.click()}
+                  className={`border-2 border-dashed rounded-utcv p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                    dragIneTutorOver ? 'bg-red-50 border-red-300' : 'bg-white border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputIneTutorRef}
+                    onChange={(e) => e.target.files?.[0] && validarYEstablecerIneTutor(e.target.files[0])}
+                    accept=".pdf,image/*"
+                    className="hidden"
+                  />
+                  
+                  {localIneTutor ? (
+                    <div className="flex flex-col items-center space-y-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="text-sm font-bold text-gray-800">{localIneTutor.name}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLocalIneTutor(null);
+                        }}
+                        className="px-2 py-1 text-xs bg-red-50 text-utcv-danger font-bold hover:bg-red-100 transition-colors rounded"
+                      >
+                        Quitar archivo
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-1 text-gray-500 select-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400 block mb-1 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                      <p className="text-xs font-semibold text-gray-700">Arrastra el INE corregido o haz clic</p>
+                    </div>
+                  )}
+                </div>
+                {ineTutorError && <p className="text-xs text-utcv-danger font-medium mt-1">{ineTutorError}</p>}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Botón de reenvío */}
+        {tieneRechazosDoc ? (
+          <div className="space-y-4">
+            {errorEnvio && (
+              <p className="text-xs text-utcv-danger font-semibold bg-red-50 border border-red-200 p-2.5 rounded">
+                Error al enviar: {errorEnvio}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={handleEnviarTramite}
+              disabled={enviando || faltaArchivos}
+              className="w-full py-3 text-center text-sm font-bold text-white rounded-utcv hover:bg-utcv-primary-dark transition-all shadow-sm select-none"
+              style={{
+                backgroundColor: (enviando || faltaArchivos) ? '#d6cbd0' : 'var(--color-primary)',
+                cursor: (enviando || faltaArchivos) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {enviando ? 'Enviando correcciones...' : 'Enviar documentos corregidos'}
+            </button>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => onIrAPaso(2)}
+                className="text-xs font-semibold text-utcv-primary hover:underline hover:text-utcv-primary-dark transition-colors"
+              >
+                ¿Deseas editar otros datos del formulario? Haz clic aquí.
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onIrAPaso(2)} // Volver a los datos de la empresa
+            className="w-full py-2.5 text-center text-sm font-bold text-white rounded-utcv hover:bg-utcv-primary-dark transition-colors shadow-sm select-none"
+            style={{ backgroundColor: 'var(--color-primary)' }}
+          >
+            Editar información y volver a enviar
+          </button>
+        )}
       </div>
     );
   }
@@ -604,20 +776,21 @@ export const Fase5Documentos: React.FC<Fase5Props> = ({
 
         {/* 1. Botón de Descarga */}
         <div className="space-y-3 bg-utcv-primary-light/45 border border-utcv-border rounded-utcv p-5">
-          <p className="text-xs font-bold text-utcv-primary uppercase tracking-wider">Paso 1: Descargar el Formato</p>
+          <p className="text-xs font-bold text-utcv-primary uppercase tracking-wider">Paso 1: Imprimir / Guardar el Formato</p>
           <p className="text-sm text-gray-600 font-medium">
-            Descarga el archivo PDF de registro de estadía (FODVI08-H) que hemos generado automáticamente con tus datos.
+            Abre el formato oficial FODVI08-H prellenado con tus datos. Se abrirá en una nueva pestaña listo para imprimir o guardar como PDF.
           </p>
           
           <button
             type="button"
             onClick={handleDescargarPDF}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-utcv text-sm font-bold transition-colors shadow-sm border border-utcv-accent-dark select-none"
-            style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-primary-dark)' }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-accent-dark)'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-accent)'}
+            className="w-full sm:w-auto px-6 py-2.5 bg-utcv-primary hover:bg-utcv-primary-dark text-white text-sm font-bold rounded-utcv transition-colors flex items-center justify-center space-x-2 select-none shadow"
+            style={{ backgroundColor: 'var(--color-primary)' }}
           >
-            <span>Descargar FODVI08-H prellenado</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Generar Formato FODVI08-H</span>
           </button>
         </div>
 

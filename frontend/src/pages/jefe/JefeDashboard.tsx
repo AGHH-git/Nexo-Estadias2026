@@ -389,7 +389,7 @@ export const JefeDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Visor de Expediente (Solo Lectura) */}
+      {/* Modal de Visor de Expediente (Jefe puede dar visto bueno a documentos) */}
       <TramiteModal
         tramiteActivo={tramiteActivo}
         loadingTramite={loadingTramite}
@@ -399,6 +399,10 @@ export const JefeDashboard: React.FC = () => {
         handleEvaluar={() => {}}
         cerrarRevision={cerrarExpediente}
         soloLectura={true}
+        rolUsuario="JEFE_CARRERA"
+        onDocumentoAprobado={(tramiteActualizado) => {
+          setTramiteActivo(tramiteActualizado);
+        }}
       />
 
     </div>

@@ -9,7 +9,8 @@ import {
   Calendar, 
   FileText, 
   Settings, 
-  ChevronRight
+  ChevronRight,
+  Activity
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -57,15 +58,17 @@ export const AdminLayout: React.FC = () => {
       case 'VINCULACION':
         return [
           { name: 'Inicio', path: '/vinculacion/dashboard', icon: <Home size={20} /> },
+          { name: 'Usuarios', path: '/vinculacion/usuarios', icon: <Users size={20} /> },
           { name: 'Periodos', path: '/vinculacion/periodos', icon: <Calendar size={20} /> },
           { name: 'Reportes', path: '/vinculacion/reportes', icon: <FileText size={20} /> },
+          { name: 'Actividad', path: '/vinculacion/auditoria', icon: <Activity size={20} /> },
           { name: 'Ajustes', path: '/vinculacion/configuracion', icon: <Settings size={20} /> }
         ];
       case 'JEFE_CARRERA':
         return [
           { name: 'Inicio', path: '/jefe/dashboard', icon: <Home size={20} /> },
           { name: 'Asignaciones', path: '/jefe/asignaciones', icon: <Users size={20} /> },
-          { name: 'Expedientes', path: '/jefe/expedientes', icon: <FileText size={20} /> },
+          { name: 'Reportes', path: '/jefe/reportes', icon: <FileText size={20} /> },
         ];
       case 'MAESTRO':
         return [

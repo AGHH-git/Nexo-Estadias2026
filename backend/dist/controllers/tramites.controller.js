@@ -299,14 +299,17 @@ const actualizarTramite = async (req, res) => {
             const rutaNssRelativa = `nss/${nssFile.filename}`;
             paramsUpdate.push(rutaNssRelativa);
             queryParts.push(`ruta_nss = $${paramsUpdate.length}`);
+            queryParts.push(`nss_rechazado = false`);
         }
         if (ineTutorFile) {
             const rutaIneTutorRelativa = `ine_tutor/${ineTutorFile.filename}`;
             paramsUpdate.push(rutaIneTutorRelativa);
             queryParts.push(`ruta_ine_tutor = $${paramsUpdate.length}`);
+            queryParts.push(`ine_tutor_rechazado = false`);
         }
         else if (body.modalidad_estadia === 'Local') {
             queryParts.push(`ruta_ine_tutor = NULL`);
+            queryParts.push(`ine_tutor_rechazado = false`);
         }
         paramsUpdate.push(tramiteId);
         const idParamIndex = paramsUpdate.length;

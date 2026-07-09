@@ -63,8 +63,7 @@ export const Fase3Proyecto: React.FC<Fase3Props> = ({
     }
 
     if (!formData.alcance) nuevosErrores.alcance = 'El alcance es obligatorio.';
-
-
+    if (!formData.producto_generar) nuevosErrores.producto_generar = 'La descripción del producto a generar es obligatoria.';
 
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
@@ -228,7 +227,21 @@ export const Fase3Proyecto: React.FC<Fase3Props> = ({
           </div>
         )}
 
-
+        {/* Producto a generar */}
+        <div className="space-y-1">
+          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            Descripción del producto a generar
+          </label>
+          <textarea
+            name="producto_generar"
+            rows={3}
+            value={formData.producto_generar || ''}
+            onChange={handleInputChange}
+            placeholder="Describe el producto final que entregarás a la empresa al terminar el proyecto..."
+            className="block w-full px-3 py-2.5 border border-gray-300 rounded-utcv text-sm focus:ring-1 focus:ring-utcv-primary focus:border-utcv-primary focus:outline-none"
+          />
+          {errores.producto_generar && <p className="text-xs text-utcv-danger font-medium mt-1">{errores.producto_generar}</p>}
+        </div>
 
       </div>
 

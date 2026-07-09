@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/Login';
+import { OlvidePassword } from './pages/OlvidePassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { Tramite } from './pages/alumno/Tramite';
 import { InicioAlumno } from './pages/alumno/InicioAlumno';
 import { PreHome } from './pages/alumno/PreHome';
@@ -14,6 +16,9 @@ import { JefeAsignaciones } from './pages/jefe/JefeAsignaciones';
 import { MaestroDashboard } from './pages/maestro/MaestroDashboard';
 import { CambiarPassword } from './pages/CambiarPassword';
 import { VerificacionGoogle } from './pages/VerificacionGoogle';
+import { Reportes } from './pages/admin/Reportes';
+import { AuditoriaAdmin } from './pages/vinculacion/AuditoriaAdmin';
+import { AdminUsuarios } from './pages/vinculacion/AdminUsuarios';
 
 export const App: React.FC = () => {
   return (
@@ -21,6 +26,10 @@ export const App: React.FC = () => {
       <Routes>
         {/* Ruta Pública: Login */}
         <Route path="/login" element={<Login />} />
+        
+        {/* Rutas de Recuperación de Contraseña */}
+        <Route path="/olvide-password" element={<OlvidePassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Ruta Forzada: Verificación Google y Cambio de Contraseña */}
         <Route element={<ProtectedRoute isPasswordRoute={true} />}>
@@ -51,6 +60,7 @@ export const App: React.FC = () => {
           <Route element={<AdminLayout />}>
             <Route path="/jefe/dashboard" element={<JefeDashboard />} />
             <Route path="/jefe/asignaciones" element={<JefeAsignaciones />} />
+            <Route path="/jefe/reportes" element={<Reportes />} />
           </Route>
         </Route>
 
@@ -59,9 +69,13 @@ export const App: React.FC = () => {
           <Route element={<AdminLayout />}>
             <Route path="/vinculacion/dashboard" element={<VinculacionDashboard />} />
             <Route path="/vinculacion/vacantes" element={<VacantesAdmin />} />
+            <Route path="/vinculacion/reportes" element={<Reportes />} />
+            <Route path="/vinculacion/auditoria" element={<AuditoriaAdmin />} />
+            <Route path="/vinculacion/usuarios" element={<AdminUsuarios />} />
             {/* Otras rutas de vinculacion irán aquí */}
           </Route>
         </Route>
+
 
         {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/login" replace />} />
